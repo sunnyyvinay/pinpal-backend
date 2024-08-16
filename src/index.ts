@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import pool from './db.config';
+import morgan from "morgan";
+import connectDB from './db.config';
 import userRouter from "./routes/user.route";
 
 const app = express();
@@ -8,7 +9,9 @@ const port = 3000;
 
 // MIDDLEWARE
 app.use(cors());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // for access to client JSON requests
+app.use(morgan("dev")); // log all requests
 
 // Basic route
 app.get('/', (req: Request, res: Response) => {
@@ -35,5 +38,5 @@ app.use((req: Request, res: Response) => {
 
 app.listen(port, async () => {
     console.log(`Listening on port ${port}`);
-    await pool.connect();
+    await connectDB();
 });
