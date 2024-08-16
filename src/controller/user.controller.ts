@@ -20,13 +20,12 @@ export const signup = async (req: Request, res: Response) => {
 
     // hash the password
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(pass, salt);
+    const hashedPass = await bcrypt.hash(pass, salt);
 
-    const newUser = await pool.query(
-        `INSERT INTO users (username, full_name, pass, birthday, email, phone_no) 
-        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-        [username, full_name, pass, birthday, email, phone_no]
-    );
+    const newUserQuery = `
+        INSERT INTO users (username, full_name, pass, birthday, email, phone_no) 
+        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`;
+    await pool.query(newUserQuery, [username, full_name, hashedPass, birthday, email, phone_no]);
 
     return res.status(200).json({
       message: "User registered successfully",
@@ -71,7 +70,7 @@ export const login = async (req: Request, res: Response) => {
         phone_no: user.rows[0].phone_no,
       },
     });
-    
+
   } catch (error) {
     return res.status(500).json({
       message: "Internal Server Error",
