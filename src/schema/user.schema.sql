@@ -8,7 +8,7 @@ CREATE TABLE users.users (
     username TEXT UNIQUE NOT NULL,
     full_name TEXT NOT NULL,
     pass TEXT NOT NULL,
-    birthday TEXT NOT NULL,
+    birthday DATE NOT NULL,
     profile_pic BYTEA,
     email TEXT,
     phone_no TEXT
