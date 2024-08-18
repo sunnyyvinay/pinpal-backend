@@ -1,6 +1,5 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import morgan from "morgan";
 import connectDB from './db.config';
 import userRouter from "./routes/user.route";
 
@@ -11,7 +10,6 @@ const port = 3000;
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // for access to client JSON requests
-app.use(morgan("dev")); // log all requests
 
 // Basic route
 app.get('/', (req: Request, res: Response) => {
