@@ -5,11 +5,13 @@ import userRouter from "./routes/user.route";
 
 const app = express();
 const port = 3000;
+const morgan = require('morgan');
 
 // MIDDLEWARE
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // for access to client JSON requests
+app.use(morgan('dev'));
 
 // Basic route
 app.get('/', (req: Request, res: Response) => {
