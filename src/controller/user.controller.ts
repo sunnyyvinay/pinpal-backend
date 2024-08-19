@@ -33,6 +33,7 @@ export const signup = async (req: Request, res: Response) => {
     });
 
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "Internal server error: " + error,
     });
@@ -79,3 +80,67 @@ export const login = async (req: Request, res: Response) => {
     });
   }
 };
+
+// GET USER INFO
+export const getUserInfo = async (req: Request, res: Response) => {
+  try {
+    const { user_id } = req.params;
+    const user = await pool.query(
+      "SELECT * FROM users.users WHERE user_id = $1", 
+      [user_id]
+    );
+    if (user.rows.length === 0) {
+      return res.status(400).json({
+        message: "User does not exist",
+      });
+    }
+
+    return res.status(200).json({
+      message: "User info retrieved successfully",
+      user: {
+        user_id: user.rows[0].user_id,
+        username: user.rows[0].username,
+        full_name: user.rows[0].full_name,
+        birthday: user.rows[0].birthday,
+        email: user.rows[0].email,
+        phone_no: user.rows[0].phone_no,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
+
+// UPDATE USER INFO
+export const updateUserInfo = async (req: Request, res: Response) => {
+  try {
+    const { user_id } = req.params;
+    const { username, full_name, pass, birthday, email, phone_no } = req.body;
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPass = await bcrypt.hash(pass, salt);
+
+    const user = await pool.query(
+      "UPDATE users.users SET username = $1, full_name = $2, pass= $3, birthday = $4, email = $5, phone_no = $6 WHERE user_id = $7 RETURNING *", 
+      [username, full_name, hashedPass, birthday, email, phone_no, user_id]
+    );
+
+    if (user.rows.length === 0) {
+      return res.status(400).json({
+        message: "User does not exist",
+      });
+    }
+
+    return res.status(200).json({
+      message: "User info updated successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
