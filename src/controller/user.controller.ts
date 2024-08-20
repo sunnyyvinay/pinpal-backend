@@ -101,6 +101,7 @@ export const getUserInfo = async (req: Request, res: Response) => {
         user_id: user.rows[0].user_id,
         username: user.rows[0].username,
         full_name: user.rows[0].full_name,
+        pass: user.rows[0].pass,
         birthday: user.rows[0].birthday,
         email: user.rows[0].email,
         phone_no: user.rows[0].phone_no,
