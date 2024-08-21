@@ -1,8 +1,5 @@
 CREATE SCHEMA users;
 
-CREATE TYPE friendship_status AS ENUM ('pending', 'accepted', 'rejected');
-CREATE TYPE location_type AS ENUM ('park', 'restaurant', 'shop', 'beach', 'other');
-
 CREATE TABLE users.users (
     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username TEXT UNIQUE NOT NULL,

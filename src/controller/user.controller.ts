@@ -105,7 +105,7 @@ export const getUserInfo = async (req: Request, res: Response) => {
         birthday: user.rows[0].birthday,
         email: user.rows[0].email,
         phone_no: user.rows[0].phone_no,
-        profile_pic: user.rows[0].profile_picture ? `data:image/jpeg;base64,${user.rows[0].profile_picture.toString('base64')}` : null
+        profile_pic: user.rows[0].profile_picture ? user.rows[0].profile_picture : null
       },
     });
   } catch (error) {
