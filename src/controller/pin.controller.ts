@@ -7,7 +7,7 @@ const bcrypt = require("bcryptjs");
 export const addPin = async (req: Request, res: Response) => {
   try {
     const { user_id } = req.params;
-    const { lat_long, title, caption, create_date, edit_date, photos, location_tags, user_tags } = req.body;
+    const { lat_long, title, caption, create_date, edit_date, photos, location_tags, user_tags, visibility } = req.body;
 
     // check if the user has a pin at this location already
     const pin = await pool.query(
@@ -21,9 +21,9 @@ export const addPin = async (req: Request, res: Response) => {
     }
 
     const newPinQuery = `
-        INSERT INTO users.pins (lat_long, title, caption, create_date, edit_date, photos, location_tags, user_tags) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`;
-    await pool.query(newPinQuery, [lat_long, title, caption, create_date, edit_date, photos, location_tags, user_tags]);
+        INSERT INTO users.pins (lat_long, title, caption, create_date, edit_date, photos, location_tags, user_tags, visibility) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`;
+    await pool.query(newPinQuery, [lat_long, title, caption, create_date, edit_date, photos, location_tags, user_tags, visibility]);
 
     return res.status(200).json({
       message: "Pin created successfully",
@@ -74,7 +74,7 @@ export const deletePin = async (req: Request, res: Response) => {
 export const updatePin = async (req: Request, res: Response) => {
     try {
       const { user_id, pin_id } = req.params;
-      const { lat_long, title, caption, create_date, edit_date, photos, location_tags, user_tags } = req.body;
+      const { lat_long, title, caption, create_date, edit_date, photos, location_tags, user_tags, visibility } = req.body;
   
       // check if user doesn't exist
       const user = await pool.query(
@@ -88,9 +88,9 @@ export const updatePin = async (req: Request, res: Response) => {
       }
   
       const updatePinQuery = `
-          UPDATE users.pins SET lat_long = $1, title = $2, caption = $3, create_date = $4, edit_date = $5, photos = $6, location_tags = $7, user_tags = $8
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`;
-      await pool.query(updatePinQuery, [lat_long, title, caption, create_date, edit_date, photos, location_tags, user_tags]);
+          UPDATE users.pins SET lat_long = $1, title = $2, caption = $3, create_date = $4, edit_date = $5, photos = $6, location_tags = $7, user_tags = $8, visibility = $9
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`;
+      await pool.query(updatePinQuery, [lat_long, title, caption, create_date, edit_date, photos, location_tags, user_tags, visibility]);
   
       return res.status(200).json({
         message: "Pin updated successfully",

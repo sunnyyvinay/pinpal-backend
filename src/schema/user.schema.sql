@@ -1,27 +1,27 @@
-CREATE SCHEMA users;
+CREATE SCHEMA IF NOT EXISTS users AUTHORIZATION me;
 
-CREATE TABLE users.users (
+CREATE TABLE IF NOT EXISTS users.users (
     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username TEXT UNIQUE NOT NULL,
     full_name TEXT NOT NULL,
     pass TEXT NOT NULL,
     birthday DATE NOT NULL,
-    profile_pic BYTEA,
+    profile_pic TEXT,
     email TEXT,
     phone_no TEXT
 );
 
-CREATE TABLE users.pins (
+CREATE TABLE IF NOT EXISTS users.pins (
     pin_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(user_id) NOT NULL,
+    user_id UUID REFERENCES users.users(user_id) NOT NULL,
     lat_long POINT NOT NULL,
     title TEXT NOT NULL,
     caption TEXT,
-    create_date DATE NOT NULL,
+    create_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     edit_date DATE,
     photos TEXT[] NOT NULL,
     location_tags location_type[],
-    user_tags UUID[] REFERENCES users(user_id)
+    visibility SMALLINT NOT NULL -- 0 - private, 1 - friends, 2 - public
 );
 
 -- CREATE TABLE users.friendships (

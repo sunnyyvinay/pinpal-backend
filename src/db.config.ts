@@ -21,21 +21,21 @@ const createTables = async () => {
       // Check if the users table already exists
       const usersResult = await pool.query(`
         SELECT EXISTS (
-          SELECT 1 FROM information_schema.tables
+          SELECT * FROM information_schema.tables
           WHERE table_schema = 'users' AND table_name = 'users'
         )
       `);
       // Check if the pins table already exists
       const pinsResult = await pool.query(`
         SELECT EXISTS (
-          SELECT 1 FROM information_schema.tables
+          SELECT * FROM information_schema.tables
           WHERE table_schema = 'users' AND table_name = 'pins'
         )
       `);
 
       const usersTableExists = usersResult.rows[0].exists;
       const pinsTableExists = pinsResult.rows[0].exists;
-      if (!usersTableExists && !pinsTableExists) {
+      if (!usersTableExists || !pinsTableExists) {
         // Create tables
         await pool.query(schemaSQL);
         console.log(chalk.greenBright("Tables created successfully"));
