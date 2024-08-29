@@ -5,4 +5,4 @@ CREATE DATABASE pinpal;
 GRANT ALL PRIVILEGES ON DATABASE pinpal TO me;
 \c pinpal
 CREATE TYPE friendship_status AS ENUM ('pending', 'accepted', 'rejected');
-CREATE TYPE location_type AS ENUM ('park', 'restaurant', 'shop', 'beach', 'other');
+CREATE TYPE location_type AS ENUM ('Food', 'Viewpoint', 'Shopping', 'Beach', 'Club', 'Other');

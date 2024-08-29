@@ -19,21 +19,28 @@ const schemaSQL = fs.readFileSync(schemaFilePath, "utf-8");
 const createTables = async () => {
     try {
       // Check if the users table already exists
-      const result = await pool.query(`
+      const usersResult = await pool.query(`
         SELECT EXISTS (
           SELECT 1 FROM information_schema.tables
           WHERE table_schema = 'users' AND table_name = 'users'
         )
       `);
-  
-      const tableExists = result.rows[0].exists;
-  
-      if (!tableExists) {
+      // Check if the pins table already exists
+      const pinsResult = await pool.query(`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.tables
+          WHERE table_schema = 'users' AND table_name = 'pins'
+        )
+      `);
+
+      const usersTableExists = usersResult.rows[0].exists;
+      const pinsTableExists = pinsResult.rows[0].exists;
+      if (!usersTableExists && !pinsTableExists) {
         // Create tables
         await pool.query(schemaSQL);
         console.log(chalk.greenBright("Tables created successfully"));
       } else {
-        console.log(chalk.yellow("Users table already exists"));
+        console.log(chalk.yellow("Users/Pins tables already exists"));
       }
     } catch (error) {
       console.error(chalk.red("Error creating tables:"), error);

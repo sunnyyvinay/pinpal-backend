@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { signup, login, getUserInfo, updateUserInfo } from "../controller/user.controller";
+import { signup, login, getUserInfo, updateUserInfo, getUserPins } from "../controller/user.controller";
 
 const userRouter = Router();
 
@@ -10,9 +10,12 @@ userRouter.post("/signup", signup);
 userRouter.post("/login", login);
 
 // Get user info
-userRouter.get("/:user_id", getUserInfo);
+userRouter.get("/:user_id/info", getUserInfo);
 
 // Update user info
-userRouter.put("/:user_id", updateUserInfo);
+userRouter.put("/:user_id/update", updateUserInfo);
+
+// Get all pins
+userRouter.get("/:user_id/pins", getUserPins);
 
 export default userRouter;

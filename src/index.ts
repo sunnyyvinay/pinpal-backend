@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import connectDB from './db.config';
 import userRouter from "./routes/user.route";
+import pinRouter from "./routes/pin.route";
 
 const app = express();
 const port = 3000;
@@ -28,6 +29,9 @@ app.get('/', (req: Request, res: Response) => {
 
 // User routes
 app.use("/api/user", userRouter);
+
+// Pin routes
+app.use("/api/user/:user_id/pin", pinRouter);
 
 // Unknown route
 app.use((req: Request, res: Response) => {

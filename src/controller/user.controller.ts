@@ -146,3 +146,30 @@ export const updateUserInfo = async (req: Request, res: Response) => {
     });
   }
 }
+
+// GET ALL USER PINS
+export const getUserPins = async (req: Request, res: Response) => {
+  try {
+    const { user_id } = req.params;
+    const pins = await pool.query(
+      "SELECT * FROM users.pins WHERE user_id = $1", 
+      [user_id]
+    );
+    if (pins.rows.length === 0) {
+      return res.status(400).json({
+        message: "User has no pins",
+        pins: [],
+      });
+    }
+
+    return res.status(200).json({
+      message: "User info retrieved successfully",
+      pins: pins.rows,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}

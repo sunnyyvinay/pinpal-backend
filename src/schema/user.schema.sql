@@ -11,23 +11,24 @@ CREATE TABLE users.users (
     phone_no TEXT
 );
 
+CREATE TABLE users.pins (
+    pin_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(user_id) NOT NULL,
+    lat_long POINT NOT NULL,
+    title TEXT NOT NULL,
+    caption TEXT,
+    create_date DATE NOT NULL,
+    edit_date DATE,
+    photos TEXT[] NOT NULL,
+    location_tags location_type[],
+    user_tags UUID[] REFERENCES users(user_id)
+);
+
 -- CREATE TABLE users.friendships (
 --     source_id UUID REFERENCES users(user_id) NOT NULL,
 --     target_id UUID REFERENCES users(user_id) NOT NULL,
 --     friend_status friendship_status NOT NULL,
 --     PRIMARY KEY(source_id, target_id)
--- );
-
--- CREATE TABLE users.pins (
---     pin_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
---     user_id UUID REFERENCES users(user_id) NOT NULL,
---     lat_long POINT NOT NULL,
---     title TEXT NOT NULL,
---     caption TEXT,
---     create_date DATE NOT NULL,
---     pictures BYTEA[] NOT NULL,
---     location_tags location_type[],
---     user_tags UUID[] REFERENCES users(user_id)
 -- );
 
 -- CREATE TABLE users.pin_likes (
