@@ -14,11 +14,12 @@ CREATE TABLE IF NOT EXISTS users.users (
 CREATE TABLE IF NOT EXISTS users.pins (
     pin_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users.users(user_id) NOT NULL,
-    lat_long POINT NOT NULL,
+    latitude DOUBLE PRECISION NOT NULL,
+    longitude DOUBLE PRECISION NOT NULL,
     title TEXT NOT NULL,
     caption TEXT,
-    create_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    edit_date DATE,
+    create_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    edit_date TIMESTAMP,
     photos TEXT[] NOT NULL,
     location_tags location_type[],
     visibility SMALLINT NOT NULL -- 0 - private, 1 - friends, 2 - public
