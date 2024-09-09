@@ -21,14 +21,14 @@ CREATE TABLE IF NOT EXISTS users.pins (
     create_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     edit_date TIMESTAMP,
     photos TEXT[] NOT NULL,
-    location_tags location_type[],
+    location_tags TEXT[],
     visibility SMALLINT NOT NULL -- 0 - private, 1 - friends, 2 - public
 );
 
 -- CREATE TABLE users.friendships (
 --     source_id UUID REFERENCES users(user_id) NOT NULL,
 --     target_id UUID REFERENCES users(user_id) NOT NULL,
---     friend_status friendship_status NOT NULL,
+--     friend_status SMALLINT NOT NULL, -- 0 - pending, 1 - friends
 --     PRIMARY KEY(source_id, target_id)
 -- );
 

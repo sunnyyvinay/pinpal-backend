@@ -178,7 +178,7 @@ export const getUserPins = async (req: Request, res: Response) => {
 export const addPin = async (req: Request, res: Response) => {
   try {
     const user_id  = req.params.user_id;
-    const { latitude, longitude, title, caption, create_date, edit_date, photos, location_tags, visibility } = req.body;
+    const { latitude, longitude, title, caption, photos, location_tags, visibility } = req.body;
 
     // check if the user has a pin at this location already
     // const pin = await pool.query(
@@ -192,9 +192,9 @@ export const addPin = async (req: Request, res: Response) => {
     // }
 
     const newPinQuery = `
-        INSERT INTO users.pins (user_id, latitude, longitude, title, caption, create_date, edit_date, photos, location_tags, visibility) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`;
-    await pool.query(newPinQuery, [user_id, latitude, longitude, title, caption, create_date, edit_date, photos, location_tags, visibility]);
+        INSERT INTO users.pins (user_id, latitude, longitude, title, caption, photos, location_tags, visibility) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`;
+    await pool.query(newPinQuery, [user_id, latitude, longitude, title, caption, photos, location_tags, visibility]);
 
     return res.status(200).json({
       message: "Pin created successfully",
@@ -207,6 +207,42 @@ export const addPin = async (req: Request, res: Response) => {
     });
   }
 };
+
+// GET PIN INFO
+export const getPin = async (req: Request, res: Response) => {
+  try {
+    const { pin_id, user_id } = req.params;
+    const pin = await pool.query(
+      "SELECT * FROM users.pins WHERE pin_id = $1 AND user_id = $2", 
+      [pin_id, user_id]
+    );
+    if (pin.rows.length === 0) {
+      return res.status(400).json({
+        message: "Pin does not exist",
+      });
+    }
+
+    return res.status(200).json({
+      message: "User info retrieved successfully",
+      pin: {
+        pin_id: pin.rows[0].pin_id,
+        user_id: pin.rows[0].user_id,
+        title: pin.rows[0].title,
+        caption: pin.rows[0].caption,
+        create_date: pin.rows[0].create_date,
+        edit_date: pin.rows[0].edit_date,
+        photos: pin.rows[0].photos,
+        location_tags: pin.rows[0].location_tags,
+        visibility: pin.rows[0].visibility
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
 
 // DELETE PIN
 export const deletePin = async (req: Request, res: Response) => {
