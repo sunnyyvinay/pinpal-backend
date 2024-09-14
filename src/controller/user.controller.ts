@@ -281,23 +281,23 @@ export const deletePin = async (req: Request, res: Response) => {
 export const updatePin = async (req: Request, res: Response) => {
     try {
       const { user_id, pin_id } = req.params;
-      const { lat_long, title, caption, create_date, edit_date, photos, location_tags, user_tags, visibility } = req.body;
+      const { title, caption, photos, location_tags, visibility } = req.body;
   
-      // check if user doesn't exist
-      const user = await pool.query(
+      // check if pin doesn't exist
+      const pin = await pool.query(
         "SELECT * FROM users.pins WHERE user_id = $1 AND pin_id = $2", 
         [user_id, pin_id]
       );
-      if (user.rows.length <= 0) {
+      if (pin.rows.length <= 0) {
         return res.status(400).json({
           message: "Specified pin does not exist",
         });
       }
   
       const updatePinQuery = `
-          UPDATE users.pins SET lat_long = $1, title = $2, caption = $3, create_date = $4, edit_date = $5, photos = $6, location_tags = $7, user_tags = $8, visibility = $9
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`;
-      await pool.query(updatePinQuery, [lat_long, title, caption, create_date, edit_date, photos, location_tags, user_tags, visibility]);
+          UPDATE users.pins SET title = $1, caption = $2, photos = $3, location_tags = $4, visibility = $5
+          WHERE user_id = $6 AND pin_id = $7 RETURNING *`;
+      await pool.query(updatePinQuery, [title, caption, photos, location_tags, visibility, user_id, pin_id]);
   
       return res.status(200).json({
         message: "Pin updated successfully",
@@ -310,3 +310,37 @@ export const updatePin = async (req: Request, res: Response) => {
       });
     }
   };
+
+// UPDATE PIN LOCATION
+export const updatePinLocation = async (req: Request, res: Response) => {
+  try {
+    const { user_id, pin_id } = req.params;
+    const { latitude, longitude } = req.body;
+
+    // check if pin doesn't exist
+    const user = await pool.query(
+      "SELECT * FROM users.pins WHERE user_id = $1 AND pin_id = $2", 
+      [user_id, pin_id]
+    );
+    if (user.rows.length <= 0) {
+      return res.status(400).json({
+        message: "Specified pin does not exist",
+      });
+    }
+
+    const updatePinQuery = `
+          UPDATE users.pins SET latitude = $1, longitude = $2
+          WHERE user_id = $3 AND pin_id = $4 RETURNING *`;
+    await pool.query(updatePinQuery, [latitude, longitude, user_id, pin_id]);
+
+    return res.status(200).json({
+      message: "Pin updated successfully",
+    });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal server error: " + error,
+    });
+  }
+};
