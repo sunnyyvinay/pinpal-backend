@@ -32,15 +32,23 @@ const createTables = async () => {
           WHERE table_schema = 'users' AND table_name = 'pins'
         )
       `);
+      // Check if the friendships table already exists
+      const friendshipsResult = await pool.query(`
+        SELECT EXISTS (
+          SELECT * FROM information_schema.tables
+          WHERE table_schema = 'users' AND table_name = 'friendships'
+        )
+      `);
 
       const usersTableExists = usersResult.rows[0].exists;
       const pinsTableExists = pinsResult.rows[0].exists;
-      if (!usersTableExists || !pinsTableExists) {
+      const friendshipsTableExists = friendshipsResult.rows[0].exists;
+      if (!usersTableExists || !pinsTableExists || !friendshipsTableExists) {
         // Create tables
         await pool.query(schemaSQL);
         console.log(chalk.greenBright("Tables created successfully"));
       } else {
-        console.log(chalk.yellow("Users/Pins tables already exists"));
+        console.log(chalk.yellow("Tables already exist"));
       }
     } catch (error) {
       console.error(chalk.red("Error creating tables:"), error);

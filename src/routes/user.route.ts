@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { signup, login, getUserInfo, updateUserInfo, getUserPins, 
-        addPin, updatePin, deletePin, getPin, updatePinLocation } from "../controller/user.controller";
+        addPin, updatePin, deletePin, getPin, updatePinLocation, 
+        getUserRequests, getUserFriends, getSearchUsers } from "../controller/user.controller";
 
 const userRouter = Router();
 
@@ -33,5 +34,14 @@ userRouter.patch("/:user_id/pin/:pin_id/update_loc", updatePinLocation);
 
 // Delete a pin
 userRouter.delete("/:user_id/pin/:pin_id/delete", deletePin);
+
+// Get all user friend requests
+userRouter.get("/:user_id/requests", getUserRequests);
+
+// Get all user friends
+userRouter.get("/:user_id/friends", getUserFriends);
+
+// Search for users (based on a query)
+userRouter.get("/search/:query", getSearchUsers);
 
 export default userRouter;

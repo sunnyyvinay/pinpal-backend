@@ -25,12 +25,13 @@ CREATE TABLE IF NOT EXISTS users.pins (
     visibility SMALLINT NOT NULL -- 0 - private, 1 - friends, 2 - public
 );
 
--- CREATE TABLE users.friendships (
---     source_id UUID REFERENCES users(user_id) NOT NULL,
---     target_id UUID REFERENCES users(user_id) NOT NULL,
---     friend_status SMALLINT NOT NULL, -- 0 - pending, 1 - friends
---     PRIMARY KEY(source_id, target_id)
--- );
+CREATE TABLE IF NOT EXISTS users.friendships (
+    source_id UUID REFERENCES users.users(user_id) ON DELETE CASCADE,
+    target_id UUID REFERENCES users.users(user_id) ON DELETE CASCADE,
+    friend_status SMALLINT DEFAULT 0, -- 0 - pending, 1 - friends
+    PRIMARY KEY(source_id, target_id),
+    CHECK (source_id <> target_id)
+);
 
 -- CREATE TABLE users.pin_likes (
 --     user_id UUID REFERENCES users(user_id) NOT NULL,

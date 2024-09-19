@@ -344,3 +344,92 @@ export const updatePinLocation = async (req: Request, res: Response) => {
     });
   }
 };
+
+// GET USER FRIEND REQUESTS
+export const getUserRequests = async (req: Request, res: Response) => {
+  try {
+    const { user_id } = req.params;
+    const user = await pool.query(
+      "SELECT * FROM users.users WHERE user_id = $1", 
+      [user_id]
+    );
+    if (user.rows.length === 0) {
+      return res.status(400).json({
+        message: "User does not exist",
+      });
+    }
+
+    const requests = await pool.query(
+      "SELECT * FROM users.friendships WHERE target_id = $1 AND friend_status = 0", 
+      [user_id]
+    );
+
+    return res.status(200).json({
+      message: "User friend requests retrieved successfully",
+      friend_requests: {
+        requests: requests.rows
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
+
+// GET USER FRIENDS
+export const getUserFriends = async (req: Request, res: Response) => {
+  try {
+    const { user_id } = req.params;
+    const user = await pool.query(
+      "SELECT * FROM users.users WHERE user_id = $1", 
+      [user_id]
+    );
+    if (user.rows.length === 0) {
+      return res.status(400).json({
+        message: "User does not exist",
+      });
+    }
+
+    const friends = await pool.query(
+      "SELECT * FROM users.friendships WHERE friend_status = 1 AND (target_id = $1 OR source_id = $1)", 
+      [user_id]
+    );
+
+    return res.status(200).json({
+      message: "User friends retrieved successfully",
+      friends: {
+        friends: friends.rows
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
+
+// SEARCH FOR USERS (BASED ON QUERY)
+export const getSearchUsers = async (req: Request, res: Response) => {
+  try {
+    const { query } = req.params;
+    const searchQuery = `%${query}%`;
+
+    const queriedUsers = await pool.query(
+      "SELECT * FROM users.users WHERE username ILIKE $1 OR full_name ILIKE $1", 
+      [searchQuery]
+    );
+
+    return res.status(200).json({
+      message: "Queried users retrieved successfully",
+      users: queriedUsers.rows
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
