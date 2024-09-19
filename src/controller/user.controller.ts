@@ -433,3 +433,69 @@ export const getSearchUsers = async (req: Request, res: Response) => {
     });
   }
 }
+
+// CREATE A FRIEND REQUEST
+export const createFriendRequest = async (req: Request, res: Response) => {
+  try {
+    const { user_id, target_id}  = req.params;
+
+    const newPinQuery = `
+        INSERT INTO users.friendships (source_id, target_id, friend_status) 
+        VALUES ($1, $2, $3) RETURNING *`;
+    await pool.query(newPinQuery, [user_id, target_id, 0]);
+
+    return res.status(200).json({
+      message: "Friend request created successfully",
+    });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal server error: " + error,
+    });
+  }
+};
+
+// ACCEPT FRIEND REQUEST
+export const acceptFriendRequest = async (req: Request, res: Response) => {
+  try {
+    const { user_id, target_id } = req.params;
+
+    const updatePinQuery = `
+          UPDATE users.friendships SET friend_status = 1
+          WHERE source_id = $1 AND target_id = $2 RETURNING *`;
+    await pool.query(updatePinQuery, [user_id, target_id]);
+
+    return res.status(200).json({
+      message: "Friend request updated successfully",
+    });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal server error: " + error,
+    });
+  }
+};
+
+// DECLINE OR DELETE FRIEND REQUEST
+export const deleteFriendRequest = async (req: Request, res: Response) => {
+  try {
+    const { user_id, target_id } = req.params;
+
+    const deletePinQuery = `
+        DELETE FROM users.friendships 
+        WHERE user_id = $1 AND target_id = $2 RETURNING *`;
+    await pool.query(deletePinQuery, [user_id, target_id]);
+
+    return res.status(200).json({
+      message: "Friend request deleted successfully",
+    });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal server error: " + error,
+    });
+  }
+};

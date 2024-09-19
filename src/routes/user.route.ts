@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { signup, login, getUserInfo, updateUserInfo, getUserPins, 
         addPin, updatePin, deletePin, getPin, updatePinLocation, 
-        getUserRequests, getUserFriends, getSearchUsers } from "../controller/user.controller";
+        getUserRequests, createFriendRequest, deleteFriendRequest, acceptFriendRequest,
+        getUserFriends, getSearchUsers } from "../controller/user.controller";
 
 const userRouter = Router();
 
@@ -43,5 +44,14 @@ userRouter.get("/:user_id/friends", getUserFriends);
 
 // Search for users (based on a query)
 userRouter.get("/search/:query", getSearchUsers);
+
+// Create a friend request
+userRouter.post("/:user_id/request/:target_id/create", createFriendRequest);
+
+// Accept a friend request
+userRouter.patch("/:user_id/request/:target_id/accept", acceptFriendRequest);
+
+// Decline or Delete a friend request
+userRouter.delete("/:user_id/request/:target_id/delete", deleteFriendRequest);
 
 export default userRouter;
