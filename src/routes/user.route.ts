@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { signup, login, getUserInfo, updateUserInfo, getUserPins, 
         addPin, updatePin, deletePin, getPin, updatePinLocation, 
-        getUserRequests, createFriendRequest, deleteFriendRequest, acceptFriendRequest,
+        getUserRequests, getFriendStatus, createFriendRequest, deleteFriendRequest, acceptFriendRequest,
         getUserFriends, getSearchUsers } from "../controller/user.controller";
 
 const userRouter = Router();
@@ -44,6 +44,9 @@ userRouter.get("/:user_id/friends", getUserFriends);
 
 // Search for users (based on a query)
 userRouter.get("/search/:query", getSearchUsers);
+
+// Get friend request status
+userRouter.get("/:user_id/request/:target_id/status", getFriendStatus);
 
 // Create a friend request
 userRouter.post("/:user_id/request/:target_id/create", createFriendRequest);

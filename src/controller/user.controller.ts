@@ -364,11 +364,18 @@ export const getUserRequests = async (req: Request, res: Response) => {
       [user_id]
     );
 
+    let friend_requests = [];
+    for (let i = 0; i < requests.rows.length; i++) {
+      const user = await pool.query(
+        "SELECT * FROM users.users WHERE user_id = $1", 
+        [requests.rows[i].source_id]
+      );
+      friend_requests.push(user.rows[0]);
+    }
+
     return res.status(200).json({
       message: "User friend requests retrieved successfully",
-      friend_requests: {
-        requests: requests.rows
-      },
+      friend_requests: friend_requests,
     });
   } catch (error) {
     console.log(error);
@@ -393,7 +400,7 @@ export const getUserFriends = async (req: Request, res: Response) => {
     }
 
     const friends = await pool.query(
-      "SELECT * FROM users.friendships WHERE friend_status = 1 AND (target_id = $1 OR source_id = $1)", 
+      "SELECT * FROM users.friendships WHERE friend_status = 1 AND ((target_id = $1 OR source_id = $1) OR (source_id = $1 OR target_id = $1))", 
       [user_id]
     );
 
@@ -426,6 +433,53 @@ export const getSearchUsers = async (req: Request, res: Response) => {
       message: "Queried users retrieved successfully",
       users: queriedUsers.rows
     });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
+
+// GET FRIEND REQUEST STATUS
+export const getFriendStatus = async (req: Request, res: Response) => {
+  try {
+    const { user_id, target_id } = req.params;
+
+    const status_result = await pool.query(
+      "SELECT * FROM users.friendships WHERE source_id = $1 AND target_id = $2", 
+      [user_id, target_id]
+    );
+    const status_result2 = await pool.query(
+      "SELECT * FROM users.friendships WHERE target_id = $1 AND source_id = $2", 
+      [user_id, target_id]
+    );
+    if (status_result.rows.length === 0 && status_result2.rows.length === 0) {
+      return res.status(200).json({
+        status: -1
+      })
+    } else if (status_result.rows.length === 0 && status_result2.rows.length > 0) {
+      if (status_result2.rows[0].friend_status === 0) {
+        return res.status(200).json({
+          status: -2
+        })
+      } else if (status_result2.rows[0].friend_status === 1) {
+        return res.status(200).json({
+          status: 1
+        })
+      }
+
+    } else if (status_result.rows.length > 0 && status_result2.rows.length === 0) {
+      if (status_result.rows[0].friend_status === 0) {
+        return res.status(200).json({
+          status: 0
+        })
+      } else if (status_result.rows[0].friend_status === 1) {
+        return res.status(200).json({
+          status: 1
+        })
+      }
+    }
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -485,7 +539,7 @@ export const deleteFriendRequest = async (req: Request, res: Response) => {
 
     const deletePinQuery = `
         DELETE FROM users.friendships 
-        WHERE user_id = $1 AND target_id = $2 RETURNING *`;
+        WHERE (source_id = $1 AND target_id = $2) OR (target_id = $2 AND source_id = $1) RETURNING *`;
     await pool.query(deletePinQuery, [user_id, target_id]);
 
     return res.status(200).json({
