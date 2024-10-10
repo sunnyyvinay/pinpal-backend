@@ -26,8 +26,8 @@ CREATE TABLE IF NOT EXISTS users.pins (
 );
 
 CREATE TABLE IF NOT EXISTS users.friendships (
-    source_id UUID REFERENCES users.users(user_id) ON DELETE CASCADE,
-    target_id UUID REFERENCES users.users(user_id) ON DELETE CASCADE,
+    source_id UUID REFERENCES users.users(user_id),
+    target_id UUID REFERENCES users.users(user_id),
     friend_status SMALLINT DEFAULT 0, -- 0 - pending, 1 - friends
     PRIMARY KEY(source_id, target_id),
     CHECK (source_id <> target_id)

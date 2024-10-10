@@ -39,9 +39,6 @@ userRouter.delete("/:user_id/pin/:pin_id/delete", deletePin);
 // Get all user friend requests
 userRouter.get("/:user_id/requests", getUserRequests);
 
-// Get all user friends
-userRouter.get("/:user_id/friends", getUserFriends);
-
 // Search for users (based on a query)
 userRouter.get("/search/:query", getSearchUsers);
 
@@ -56,5 +53,8 @@ userRouter.patch("/:user_id/request/:target_id/accept", acceptFriendRequest);
 
 // Decline or Delete a friend request
 userRouter.delete("/:user_id/request/:target_id/delete", deleteFriendRequest);
+
+// Get all user friends
+userRouter.get("/:user_id/friends", getUserFriends);
 
 export default userRouter;

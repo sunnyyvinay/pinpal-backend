@@ -389,26 +389,15 @@ export const getUserRequests = async (req: Request, res: Response) => {
 export const getUserFriends = async (req: Request, res: Response) => {
   try {
     const { user_id } = req.params;
-    const user = await pool.query(
-      "SELECT * FROM users.users WHERE user_id = $1", 
-      [user_id]
-    );
-    if (user.rows.length === 0) {
-      return res.status(400).json({
-        message: "User does not exist",
-      });
-    }
 
     const friends = await pool.query(
-      "SELECT * FROM users.friendships WHERE friend_status = 1 AND ((target_id = $1 OR source_id = $1) OR (source_id = $1 OR target_id = $1))", 
+      "SELECT * FROM users.friendships WHERE friend_status = 1 AND (target_id = $1 OR source_id = $1)", 
       [user_id]
     );
 
     return res.status(200).json({
       message: "User friends retrieved successfully",
-      friends: {
-        friends: friends.rows
-      },
+      friends: friends.rows
     });
   } catch (error) {
     console.log(error);
