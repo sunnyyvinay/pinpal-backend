@@ -542,3 +542,67 @@ export const deleteFriendRequest = async (req: Request, res: Response) => {
     });
   }
 };
+
+// GET PIN LIKES
+export const getPinLikes = async (req: Request, res: Response) => {
+  try {
+    const { pin_id } = req.params;
+
+    const likes = await pool.query(
+      "SELECT * FROM users.pin_likes WHERE pin_id = $1", 
+      [pin_id]
+    );
+
+    return res.status(200).json({
+      message: "Pin likes retrieved successfully",
+      likes: likes.rows
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
+
+// ADD PIN LIKE
+export const addPinLike = async (req: Request, res: Response) => {
+  try {
+    const { user_id, pin_id } = req.params;
+
+    const likes = await pool.query(
+      "INSERT INTO users.pin_likes (user_id, pin_id) VALUES ($1, $2) RETURNING *", 
+      [user_id, pin_id]
+    );
+
+    return res.status(200).json({
+      message: "Pin like added successfully"
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
+
+// DELETE PIN LIKE
+export const removePinLike = async (req: Request, res: Response) => {
+  try {
+    const { user_id, pin_id } = req.params;
+
+    const likes = await pool.query(
+      "DELETE FROM users.pin_likes WHERE user_id = $1 AND pin_id = $2 RETURNING *", 
+      [user_id, pin_id]
+    );
+
+    return res.status(200).json({
+      message: "Pin like removed successfully"
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}

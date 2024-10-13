@@ -33,8 +33,8 @@ CREATE TABLE IF NOT EXISTS users.friendships (
     CHECK (source_id <> target_id)
 );
 
--- CREATE TABLE users.pin_likes (
---     user_id UUID REFERENCES users(user_id) NOT NULL,
---     pin_id UUID REFERENCES pins(pin_id) NOT NULL,
---     PRIMARY KEY(user_id, pin_id)
--- );
+CREATE TABLE IF NOT EXISTS users.pin_likes (
+    user_id UUID REFERENCES users.users(user_id),
+    pin_id UUID REFERENCES users.pins(pin_id),
+    PRIMARY KEY(user_id, pin_id)
+);
