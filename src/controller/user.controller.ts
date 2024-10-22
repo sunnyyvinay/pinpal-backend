@@ -606,3 +606,40 @@ export const removePinLike = async (req: Request, res: Response) => {
     });
   }
 }
+
+// GET PUBLIC PINS (randomly chosen for user)
+export const getPublicPins = async (req: Request, res: Response) => {
+  try {
+    const { user_id } = req.params;
+    const publicPins = await pool.query(
+      "SELECT * FROM users.pins WHERE visibility = 2 AND user_id <> $1 AND user_id NOT IN (SELECT target_id FROM users.friendships WHERE source_id = $1) AND user_id NOT IN (SELECT source_id FROM users.friendships WHERE target_id = $1)", 
+      [user_id]
+    );
+    
+    if (publicPins.rows.length === 0) {
+      return res.status(400).json({
+        message: "No public pins found",
+        pins: [],
+      });
+    }
+    var selectedPublicPins = [];
+    var randomIndexes: number[] = [];
+    for (let i = 0; i < publicPins.rows.length / 3; i++) { // randomly chooses 1/3 of the public pins
+      const randomPinIndex = Math.floor(Math.random() * publicPins.rows.length);
+      if (!randomIndexes.includes(randomPinIndex)) {
+        randomIndexes.push(randomPinIndex);
+        selectedPublicPins.push(publicPins.rows[randomPinIndex]);
+      }
+    }
+    
+    return res.status(200).json({
+      message: "Public pins retrieved successfully",
+      pins: selectedPublicPins,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}

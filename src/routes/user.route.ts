@@ -3,7 +3,8 @@ import { signup, login, getUserInfo, updateUserInfo, getUserPins,
         addPin, updatePin, deletePin, getPin, updatePinLocation, 
         getUserRequests, getFriendStatus, createFriendRequest, deleteFriendRequest, acceptFriendRequest,
         getUserFriends, getSearchUsers,
-        getPinLikes, addPinLike, removePinLike } from "../controller/user.controller";
+        getPinLikes, addPinLike, removePinLike,
+        getPublicPins } from "../controller/user.controller";
 
 const userRouter = Router();
 
@@ -66,5 +67,8 @@ userRouter.post("/:pin_id/user/:user_id/like", addPinLike);
 
 // Remove pin like
 userRouter.delete("/:pin_id/user/:user_id/unlike", removePinLike);
+
+// Get public pins
+userRouter.get("/:user_id/pins/public", getPublicPins);
 
 export default userRouter;
