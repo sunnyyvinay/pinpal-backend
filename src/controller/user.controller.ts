@@ -178,7 +178,7 @@ export const getUserPins = async (req: Request, res: Response) => {
 export const addPin = async (req: Request, res: Response) => {
   try {
     const user_id  = req.params.user_id;
-    const { latitude, longitude, title, caption, photos, location_tags, visibility } = req.body;
+    const { latitude, longitude, title, caption, photos, location_tags, visibility, user_tags } = req.body;
 
     // check if the user has a pin at this location already
     // const pin = await pool.query(
@@ -192,9 +192,9 @@ export const addPin = async (req: Request, res: Response) => {
     // }
 
     const newPinQuery = `
-        INSERT INTO users.pins (user_id, latitude, longitude, title, caption, photos, location_tags, visibility) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`;
-    await pool.query(newPinQuery, [user_id, latitude, longitude, title, caption, photos, location_tags, visibility]);
+        INSERT INTO users.pins (user_id, latitude, longitude, title, caption, photos, location_tags, visibility, user_tags) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`;
+    await pool.query(newPinQuery, [user_id, latitude, longitude, title, caption, photos, location_tags, visibility, user_tags]);
 
     return res.status(200).json({
       message: "Pin created successfully",
@@ -233,7 +233,8 @@ export const getPin = async (req: Request, res: Response) => {
         edit_date: pin.rows[0].edit_date,
         photos: pin.rows[0].photos,
         location_tags: pin.rows[0].location_tags,
-        visibility: pin.rows[0].visibility
+        visibility: pin.rows[0].visibility,
+        user_tags: pin.rows[0].user_tags
       },
     });
   } catch (error) {
@@ -281,7 +282,7 @@ export const deletePin = async (req: Request, res: Response) => {
 export const updatePin = async (req: Request, res: Response) => {
     try {
       const { user_id, pin_id } = req.params;
-      const { title, caption, photos, location_tags, visibility } = req.body;
+      const { title, caption, photos, location_tags, visibility, user_tags } = req.body;
   
       // check if pin doesn't exist
       const pin = await pool.query(
@@ -295,9 +296,9 @@ export const updatePin = async (req: Request, res: Response) => {
       }
   
       const updatePinQuery = `
-          UPDATE users.pins SET title = $1, caption = $2, photos = $3, location_tags = $4, visibility = $5
-          WHERE user_id = $6 AND pin_id = $7 RETURNING *`;
-      await pool.query(updatePinQuery, [title, caption, photos, location_tags, visibility, user_id, pin_id]);
+          UPDATE users.pins SET title = $1, caption = $2, photos = $3, location_tags = $4, visibility = $5, user_tags = $6
+          WHERE user_id = $7 AND pin_id = $8 RETURNING *`;
+      await pool.query(updatePinQuery, [title, caption, photos, location_tags, visibility, user_tags, user_id, pin_id]);
   
       return res.status(200).json({
         message: "Pin updated successfully",

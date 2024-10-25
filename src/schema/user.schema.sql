@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS users.pins (
     edit_date TIMESTAMP,
     photos TEXT[] NOT NULL,
     location_tags TEXT[],
-    visibility SMALLINT NOT NULL -- 0 - private, 1 - friends, 2 - public
+    visibility SMALLINT NOT NULL, -- 0 - private, 1 - friends, 2 - public
+    user_tags UUID[]
 );
 
 CREATE TABLE IF NOT EXISTS users.friendships (
