@@ -19,11 +19,10 @@ CREATE TABLE IF NOT EXISTS users.pins (
     title TEXT NOT NULL,
     caption TEXT,
     create_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    edit_date TIMESTAMP,
     photos TEXT[] NOT NULL,
     location_tags TEXT[],
     visibility SMALLINT NOT NULL, -- 0 - private, 1 - friends, 2 - public
-    user_tags UUID[]
+    user_tags TEXT[]
 );
 
 CREATE TABLE IF NOT EXISTS users.friendships (
