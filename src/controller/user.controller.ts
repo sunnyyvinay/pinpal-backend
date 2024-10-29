@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { pool } from "../db.config";
 import chalk from "chalk";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import dotenv from "dotenv";
 const bcrypt = require("bcryptjs");
 
@@ -138,16 +138,25 @@ export const updateUserInfo = async (req: Request, res: Response) => {
   try {
     const { user_id } = req.params;
     const { username, full_name, pass, birthday, email, phone_no } = req.body;
+    const profile_pic  = req.file?.buffer;
 
-    const command = new PutObjectCommand({
-      Bucket: bucketName,
-      Key: `profile_pics/${user_id}`,
-      Body: req.file?.buffer,
-      ContentType: req.file?.mimetype
-    });
-    await s3.send(command);
-
-    const profile_pic_url = `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/profile_pics/${user_id}`;
+    let profile_pic_url = null;
+    if (profile_pic) {
+      const command = new PutObjectCommand({
+        Bucket: bucketName,
+        Key: `profile_pics/${user_id}`,
+        Body: req.file?.buffer,
+        ContentType: req.file?.mimetype
+      });
+      await s3.send(command);
+      profile_pic_url = `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/profile_pics/${user_id}`;
+    } else {
+      const command = new DeleteObjectCommand({
+        Bucket: bucketName,
+        Key: `profile_pics/${user_id}`,
+      });
+      await s3.send(command);
+    }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPass = await bcrypt.hash(pass, salt);
