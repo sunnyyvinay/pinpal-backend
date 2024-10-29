@@ -1,3 +1,4 @@
+import multer from 'multer';
 import { Router } from "express";
 import { signup, login, getUserInfo, updateUserInfo, getUserPins, 
         addPin, updatePin, deletePin, getPin, updatePinLocation, 
@@ -7,6 +8,9 @@ import { signup, login, getUserInfo, updateUserInfo, getUserPins,
         getPublicPins } from "../controller/user.controller";
 
 const userRouter = Router();
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+upload.single('profile_pic');
 
 // Signup a new user
 userRouter.post("/signup", signup);
@@ -18,7 +22,7 @@ userRouter.post("/login", login);
 userRouter.get("/:user_id/info", getUserInfo);
 
 // Update user info
-userRouter.put("/:user_id/update", updateUserInfo);
+userRouter.put("/:user_id/update", upload.single('profile_pic'), updateUserInfo);
 
 // Get all pins
 userRouter.get("/:user_id/pins", getUserPins);

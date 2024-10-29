@@ -1,7 +1,24 @@
 import { Request, Response } from "express";
 import { pool } from "../db.config";
 import chalk from "chalk";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import dotenv from "dotenv";
 const bcrypt = require("bcryptjs");
+
+dotenv.config();
+const bucketName = process.env.AWS_BUCKET_NAME;
+const bucketRegion = process.env.AWS_BUCKET_REGION;
+const accessKey = process.env.AWS_ACCESS_KEY ?? "";
+const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY ?? "";
+
+const s3 = new S3Client({
+  credentials: {
+    accessKeyId: accessKey,
+    secretAccessKey: secretAccessKey,
+  },
+  region: bucketRegion,
+});
+
 
 // SIGNUP USER
 export const signup = async (req: Request, res: Response) => {
@@ -105,7 +122,7 @@ export const getUserInfo = async (req: Request, res: Response) => {
         birthday: user.rows[0].birthday,
         email: user.rows[0].email,
         phone_no: user.rows[0].phone_no,
-        profile_pic: user.rows[0].profile_picture ? user.rows[0].profile_picture : null
+        profile_pic: user.rows[0].profile_pic
       },
     });
   } catch (error) {
@@ -120,14 +137,24 @@ export const getUserInfo = async (req: Request, res: Response) => {
 export const updateUserInfo = async (req: Request, res: Response) => {
   try {
     const { user_id } = req.params;
-    const { username, full_name, pass, birthday, email, phone_no, profile_pic } = req.body;
+    const { username, full_name, pass, birthday, email, phone_no } = req.body;
+
+    const command = new PutObjectCommand({
+      Bucket: bucketName,
+      Key: `profile_pics/${user_id}`,
+      Body: req.file?.buffer,
+      ContentType: req.file?.mimetype
+    });
+    await s3.send(command);
+
+    const profile_pic_url = `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/profile_pics/${user_id}`;
 
     const salt = await bcrypt.genSalt(10);
     const hashedPass = await bcrypt.hash(pass, salt);
 
     const user = await pool.query(
       "UPDATE users.users SET username = $1, full_name = $2, pass= $3, birthday = $4, email = $5, phone_no = $6, profile_pic = $7 WHERE user_id = $8 RETURNING *", 
-      [username, full_name, hashedPass, birthday, email, phone_no, profile_pic, user_id]
+      [username, full_name, hashedPass, birthday, email, phone_no, profile_pic_url, user_id]
     );
 
     if (user.rows.length === 0) {
