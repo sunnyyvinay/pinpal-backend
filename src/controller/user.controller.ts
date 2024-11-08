@@ -338,8 +338,12 @@ export const deletePin = async (req: Request, res: Response) => {
 export const updatePin = async (req: Request, res: Response) => {
     try {
       const { user_id, pin_id } = req.params;
-      const { title, caption, location_tags, visibility, user_tags } = req.body;
-      const photo  = req.file?.buffer;
+      const title = req.headers['title'];
+      const caption = req.headers['caption'];
+      const location_tags = typeof req.headers['location_tags'] === 'string' ? JSON.parse(req.headers['location_tags']) : [];
+      const visibility = req.headers['visibility'];
+      const user_tags = typeof req.headers['user_tags'] === 'string' ? JSON.parse(req.headers['user_tags']) : [];
+      const photo = req.file?.buffer;
   
       // check if pin doesn't exist
       const pin = await pool.query(
@@ -351,24 +355,25 @@ export const updatePin = async (req: Request, res: Response) => {
           message: "Specified pin does not exist",
         });
       }
-
-      const old_photo_url = (pin.rows[0].photo).replace('https://pinpal-images.s3.us-east-2.amazonaws.com/', '');
-      const command = new DeleteObjectCommand({
-        Bucket: bucketName,
-        Key: old_photo_url,
-      });
-      await s3.send(command);
-
+      
       let photo_url = null;
+      const date = Date.now();
       if (photo) {
-        const command = new PutObjectCommand({
+        const old_photo_url = (pin.rows[0].photo).replace('https://pinpal-images.s3.us-east-2.amazonaws.com/', '');
+        const command = new DeleteObjectCommand({
           Bucket: bucketName,
-          Key: `pin_pics/${user_id}/${Date.now()}`,
+          Key: old_photo_url,
+        });
+        await s3.send(command);
+
+        const command2 = new PutObjectCommand({
+          Bucket: bucketName,
+          Key: `pin_pics/${user_id}/${date}`,
           Body: req.file?.buffer,
           ContentType: req.file?.mimetype
         });
-        await s3.send(command);
-        photo_url = `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/pin_pics/${user_id}/${Date.now()}`;
+        await s3.send(command2);
+        photo_url = `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/pin_pics/${user_id}/${date}`;
       }
   
       const updatePinQuery = `
