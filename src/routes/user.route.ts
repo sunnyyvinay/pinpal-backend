@@ -28,13 +28,13 @@ userRouter.put("/:user_id/update", upload.single('profile_pic'), updateUserInfo)
 userRouter.get("/:user_id/pins", getUserPins);
 
 // Add a new pin
-userRouter.post("/:user_id/pin/add", addPin);
+userRouter.post("/:user_id/pin/add", upload.single('photo'), addPin);
 
 // Get a pin
 userRouter.get("/:user_id/pin/:pin_id/info", getPin);
 
 // Update pin info
-userRouter.put("/:user_id/pin/:pin_id/update", updatePin);
+userRouter.put("/:user_id/pin/:pin_id/update", upload.single('photo'), updatePin);
 
 // Update pin location
 userRouter.patch("/:user_id/pin/:pin_id/update_loc", updatePinLocation);

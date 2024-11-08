@@ -214,23 +214,36 @@ export const getUserPins = async (req: Request, res: Response) => {
 export const addPin = async (req: Request, res: Response) => {
   try {
     const user_id  = req.params.user_id;
-    const { latitude, longitude, title, caption, photos, location_tags, visibility, user_tags } = req.body;
+    const latitude = req.headers['latitude'];
+    const longitude = req.headers['longitude'];
+    const title = req.headers['title'];
+    const caption = req.headers['caption'];
+    const location_tags = typeof req.headers['location_tags'] === 'string'
+    ? JSON.parse(req.headers['location_tags'])
+    : [];
+    const visibility = req.headers['visibility'];
+    const user_tags = typeof req.headers['user_tags'] === 'string'
+    ? JSON.parse(req.headers['user_tags'])
+    : [];
+    const photo = req.file?.buffer;
 
-    // check if the user has a pin at this location already
-    // const pin = await pool.query(
-    //   "SELECT * FROM users.pins WHERE user_id = $1 AND lat_long = $2", 
-    //   [user_id, lat_long]
-    // );
-    // if (pin.rows.length > 0) {
-    //   return res.status(400).json({
-    //     message: "Pin at this location already exists for this user",
-    //   });
-    // }
+    let photo_url = null;
+    const date = Date.now();
+    if (photo) {
+      const command = new PutObjectCommand({
+        Bucket: bucketName,
+        Key: `pin_pics/${user_id}/${date}`,
+        Body: req.file?.buffer,
+        ContentType: req.file?.mimetype
+      });
+      await s3.send(command);
+      photo_url = `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/pin_pics/${user_id}/${date}`;
+    }
 
     const newPinQuery = `
-        INSERT INTO users.pins (user_id, latitude, longitude, title, caption, photos, location_tags, visibility, user_tags) 
+        INSERT INTO users.pins (user_id, latitude, longitude, title, caption, photo, location_tags, visibility, user_tags) 
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`;
-    await pool.query(newPinQuery, [user_id, latitude, longitude, title, caption, photos, location_tags, visibility, user_tags]);
+    await pool.query(newPinQuery, [user_id, latitude, longitude, title, caption, photo_url, location_tags, visibility, user_tags]);
 
     return res.status(200).json({
       message: "Pin created successfully",
@@ -267,7 +280,7 @@ export const getPin = async (req: Request, res: Response) => {
         caption: pin.rows[0].caption,
         create_date: pin.rows[0].create_date,
         edit_date: pin.rows[0].edit_date,
-        photos: pin.rows[0].photos,
+        photo: pin.rows[0].photo,
         location_tags: pin.rows[0].location_tags,
         visibility: pin.rows[0].visibility,
         user_tags: pin.rows[0].user_tags
@@ -296,7 +309,14 @@ export const deletePin = async (req: Request, res: Response) => {
           message: "Specified pin does not exist",
         });
       }
-  
+
+      const photo_url = (pin.rows[0].photo).replace('https://pinpal-images.s3.us-east-2.amazonaws.com/', '');
+      const command = new DeleteObjectCommand({
+        Bucket: bucketName,
+        Key: photo_url,
+      });
+      await s3.send(command);
+
       const deletePinQuery = `
           DELETE FROM users.pins 
           WHERE user_id = $1 AND pin_id = $2 RETURNING *`;
@@ -318,7 +338,8 @@ export const deletePin = async (req: Request, res: Response) => {
 export const updatePin = async (req: Request, res: Response) => {
     try {
       const { user_id, pin_id } = req.params;
-      const { title, caption, photos, location_tags, visibility, user_tags } = req.body;
+      const { title, caption, location_tags, visibility, user_tags } = req.body;
+      const photo  = req.file?.buffer;
   
       // check if pin doesn't exist
       const pin = await pool.query(
@@ -330,11 +351,30 @@ export const updatePin = async (req: Request, res: Response) => {
           message: "Specified pin does not exist",
         });
       }
+
+      const old_photo_url = (pin.rows[0].photo).replace('https://pinpal-images.s3.us-east-2.amazonaws.com/', '');
+      const command = new DeleteObjectCommand({
+        Bucket: bucketName,
+        Key: old_photo_url,
+      });
+      await s3.send(command);
+
+      let photo_url = null;
+      if (photo) {
+        const command = new PutObjectCommand({
+          Bucket: bucketName,
+          Key: `pin_pics/${user_id}/${Date.now()}`,
+          Body: req.file?.buffer,
+          ContentType: req.file?.mimetype
+        });
+        await s3.send(command);
+        photo_url = `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/pin_pics/${user_id}/${Date.now()}`;
+      }
   
       const updatePinQuery = `
-          UPDATE users.pins SET title = $1, caption = $2, photos = $3, location_tags = $4, visibility = $5, user_tags = $6
+          UPDATE users.pins SET title = $1, caption = $2, photo = $3, location_tags = $4, visibility = $5, user_tags = $6
           WHERE user_id = $7 AND pin_id = $8 RETURNING *`;
-      await pool.query(updatePinQuery, [title, caption, photos, location_tags, visibility, user_tags, user_id, pin_id]);
+      await pool.query(updatePinQuery, [title, caption, photo_url, location_tags, visibility, user_tags, user_id, pin_id]);
   
       return res.status(200).json({
         message: "Pin updated successfully",
