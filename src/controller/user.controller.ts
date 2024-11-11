@@ -356,7 +356,6 @@ export const updatePin = async (req: Request, res: Response) => {
         });
       }
 
-      let photo_url = null;
       const date = Date.now();
       if (photo) {
         const old_photo_url = (pin.rows[0].photo).replace('https://pinpal-images.s3.us-east-2.amazonaws.com/', '');
@@ -373,13 +372,20 @@ export const updatePin = async (req: Request, res: Response) => {
           ContentType: req.file?.mimetype
         });
         await s3.send(command2);
-        photo_url = `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/pin_pics/${user_id}/${date}`;
-      }
-  
-      const updatePinQuery = `
+        let photo_url = `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/pin_pics/${user_id}/${date}`;
+        const updatePinQuery = `
           UPDATE users.pins SET title = $1, caption = $2, photo = $3, location_tags = $4, visibility = $5, user_tags = $6
           WHERE user_id = $7 AND pin_id = $8 RETURNING *`;
-      await pool.query(updatePinQuery, [title, caption, photo_url, location_tags, visibility, user_tags, user_id, pin_id]);
+        await pool.query(updatePinQuery, [title, caption, photo_url, location_tags, visibility, user_tags, user_id, pin_id]);
+      
+      } else {
+        const updatePinQuery = `
+          UPDATE users.pins SET title = $1, caption = $2, location_tags = $3, visibility = $4, user_tags = $5
+          WHERE user_id = $6 AND pin_id = $7 RETURNING *`;
+        await pool.query(updatePinQuery, [title, caption, location_tags, visibility, user_tags, user_id, pin_id]);
+      }
+  
+      
   
       return res.status(200).json({
         message: "Pin updated successfully",
@@ -608,10 +614,10 @@ export const deleteFriendRequest = async (req: Request, res: Response) => {
   try {
     const { user_id, target_id } = req.params;
 
-    const deletePinQuery = `
+    const deleteRequestQuery = `
         DELETE FROM users.friendships 
         WHERE (source_id = $1 AND target_id = $2) OR (target_id = $2 AND source_id = $1) RETURNING *`;
-    await pool.query(deletePinQuery, [user_id, target_id]);
+    await pool.query(deleteRequestQuery, [user_id, target_id]);
 
     return res.status(200).json({
       message: "Friend request deleted successfully",
