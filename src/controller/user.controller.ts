@@ -355,7 +355,7 @@ export const updatePin = async (req: Request, res: Response) => {
           message: "Specified pin does not exist",
         });
       }
-      
+
       let photo_url = null;
       const date = Date.now();
       if (photo) {
@@ -717,6 +717,33 @@ export const getPublicPins = async (req: Request, res: Response) => {
     return res.status(200).json({
       message: "Public pins retrieved successfully",
       pins: selectedPublicPins,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
+
+// GET TAGGED PINS
+export const getTaggedPins = async (req: Request, res: Response) => {
+  try {
+    const { user_id } = req.params;
+    const pins = await pool.query(
+      "SELECT * FROM users.pins WHERE user_id = ANY(user_tags)", 
+      [user_id]
+    );
+    if (pins.rows.length === 0) {
+      return res.status(400).json({
+        message: "User has no pins",
+        pins: [],
+      });
+    }
+
+    return res.status(200).json({
+      message: "User info retrieved successfully",
+      pins: pins.rows,
     });
   } catch (error) {
     console.log(error);

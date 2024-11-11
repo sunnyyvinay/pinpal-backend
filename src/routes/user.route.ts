@@ -5,7 +5,7 @@ import { signup, login, getUserInfo, updateUserInfo, getUserPins,
         getUserRequests, getFriendStatus, createFriendRequest, deleteFriendRequest, acceptFriendRequest,
         getUserFriends, getSearchUsers,
         getPinLikes, addPinLike, removePinLike,
-        getPublicPins } from "../controller/user.controller";
+        getPublicPins, getTaggedPins } from "../controller/user.controller";
 
 const userRouter = Router();
 const storage = multer.memoryStorage();
@@ -74,5 +74,8 @@ userRouter.delete("/:pin_id/user/:user_id/unlike", removePinLike);
 
 // Get public pins
 userRouter.get("/:user_id/pins/public", getPublicPins);
+
+// Get tagged pins
+userRouter.get("/:user_id/pins/tagged", getTaggedPins);
 
 export default userRouter;
