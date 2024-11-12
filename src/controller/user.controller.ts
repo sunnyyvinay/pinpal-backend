@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { pool } from "../db.config";
-import chalk from "chalk";
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import dotenv from "dotenv";
 const bcrypt = require("bcryptjs");
@@ -737,7 +736,7 @@ export const getTaggedPins = async (req: Request, res: Response) => {
   try {
     const { user_id } = req.params;
     const pins = await pool.query(
-      "SELECT * FROM users.pins WHERE user_id = ANY(user_tags)", 
+      "SELECT * FROM users.pins WHERE $1 = ANY(user_tags)", 
       [user_id]
     );
     if (pins.rows.length === 0) {
