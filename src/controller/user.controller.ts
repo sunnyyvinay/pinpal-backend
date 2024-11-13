@@ -711,12 +711,13 @@ export const getPublicPins = async (req: Request, res: Response) => {
     }
     var selectedPublicPins = [];
     var randomIndexes: number[] = [];
-    for (let i = 0; i < publicPins.rows.length / 3; i++) { // randomly chooses 1/3 of the public pins
-      const randomPinIndex = Math.floor(Math.random() * publicPins.rows.length);
-      if (!randomIndexes.includes(randomPinIndex)) {
-        randomIndexes.push(randomPinIndex);
-        selectedPublicPins.push(publicPins.rows[randomPinIndex]);
-      }
+    for (let i = 0; i < publicPins.rows.length; i++) { // randomly chooses 1/3 of the public pins
+      // const randomPinIndex = Math.floor(Math.random() * publicPins.rows.length);
+      // if (!randomIndexes.includes(randomPinIndex)) {
+      //   randomIndexes.push(randomPinIndex);
+      //   selectedPublicPins.push(publicPins.rows[randomPinIndex]);
+      // }
+      selectedPublicPins.push(publicPins.rows[i]);
     }
     
     return res.status(200).json({
