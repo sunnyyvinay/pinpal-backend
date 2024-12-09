@@ -26,12 +26,12 @@ export const signup = async (req: Request, res: Response) => {
 
     // check if user already exists
     const user = await pool.query(
-      "SELECT * FROM users.users WHERE username = $1 OR phone_no = $2", 
-      [email, phone_no]
+      "SELECT * FROM users.users WHERE username = $1", 
+      [username]
     );
     if (user.rows.length > 0) {
       return res.status(400).json({
-        message: "User with this username or phone number already exists",
+        message: "User with this username already exists",
       });
     }
 
@@ -92,6 +92,34 @@ export const login = async (req: Request, res: Response) => {
   } catch (error) {
     console.log(error);
     return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// CHECK IF USERNAME EXISTS
+export const checkUsername = async (req: Request, res: Response) => {
+  try {
+    const { username } = req.params;
+    const user = await pool.query(
+      "SELECT * FROM users.users WHERE username = $1", 
+      [username]
+    );
+    if (user.rows.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "User with this username already exists",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Username is available",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
       message: "Internal Server Error",
     });
   }

@@ -1,6 +1,6 @@
 import multer from 'multer';
 import { Router } from "express";
-import { signup, login, getUserInfo, updateUserInfo, getUserPins, 
+import { signup, login, checkUsername, getUserInfo, updateUserInfo, getUserPins, 
         addPin, updatePin, deletePin, getPin, updatePinLocation, 
         getUserRequests, getFriendStatus, createFriendRequest, deleteFriendRequest, acceptFriendRequest,
         getUserFriends, getSearchUsers,
@@ -17,6 +17,8 @@ userRouter.post("/signup", signup);
 
 // Login a user
 userRouter.post("/login", login);
+
+userRouter.get("/username_exists/:username", checkUsername);
 
 // Get user info
 userRouter.get("/:user_id/info", getUserInfo);
