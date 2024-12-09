@@ -22,7 +22,7 @@ const s3 = new S3Client({
 // SIGNUP USER
 export const signup = async (req: Request, res: Response) => {
   try {
-    const { username, full_name, pass, birthday, email, phone_no } = req.body;
+    const { username, full_name, pass, birthday, phone_no } = req.body;
 
     // check if user already exists
     const user = await pool.query(
@@ -40,9 +40,9 @@ export const signup = async (req: Request, res: Response) => {
     const hashedPass = await bcrypt.hash(pass, salt);
 
     const newUserQuery = `
-        INSERT INTO users.users (username, full_name, pass, birthday, email, phone_no) 
-        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`;
-    await pool.query(newUserQuery, [username, full_name, hashedPass, birthday, email, phone_no]);
+        INSERT INTO users.users (username, full_name, pass, birthday, phone_no) 
+        VALUES ($1, $2, $3, $4, $5) RETURNING *`;
+    await pool.query(newUserQuery, [username, full_name, hashedPass, birthday, phone_no]);
 
     return res.status(200).json({
       message: "User registered successfully",
@@ -147,7 +147,6 @@ export const getUserInfo = async (req: Request, res: Response) => {
         full_name: user.rows[0].full_name,
         pass: user.rows[0].pass,
         birthday: user.rows[0].birthday,
-        email: user.rows[0].email,
         phone_no: user.rows[0].phone_no,
         profile_pic: user.rows[0].profile_pic
       },
@@ -164,7 +163,7 @@ export const getUserInfo = async (req: Request, res: Response) => {
 export const updateUserInfo = async (req: Request, res: Response) => {
   try {
     const { user_id } = req.params;
-    const { username, full_name, pass, birthday, email, phone_no } = req.body;
+    const { username, full_name, pass, birthday, phone_no } = req.body;
     const profile_pic  = req.file?.buffer;
 
     let profile_pic_url = null;
@@ -189,8 +188,8 @@ export const updateUserInfo = async (req: Request, res: Response) => {
     const hashedPass = await bcrypt.hash(pass, salt);
 
     const user = await pool.query(
-      "UPDATE users.users SET username = $1, full_name = $2, pass= $3, birthday = $4, email = $5, phone_no = $6, profile_pic = $7 WHERE user_id = $8 RETURNING *", 
-      [username, full_name, hashedPass, birthday, email, phone_no, profile_pic_url, user_id]
+      "UPDATE users.users SET username = $1, full_name = $2, pass= $3, birthday = $4, phone_no = $5, profile_pic = $6 WHERE user_id = $8 RETURNING *", 
+      [username, full_name, hashedPass, birthday, phone_no, profile_pic_url, user_id]
     );
 
     if (user.rows.length === 0) {

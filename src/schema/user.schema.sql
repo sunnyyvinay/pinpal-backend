@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS users.users (
     pass TEXT NOT NULL,
     birthday DATE NOT NULL,
     profile_pic TEXT,
-    email TEXT,
     phone_no TEXT
 );
 
