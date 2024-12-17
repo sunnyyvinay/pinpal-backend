@@ -1,6 +1,6 @@
 import multer from 'multer';
 import { Router } from "express";
-import { signup, login, checkUsername, getUserInfo, updateUserInfo, getUserPins, 
+import { signup, login, checkUsername, getUserInfo, updateUserInfo, updateUserPic, getUserPins, 
         addPin, updatePin, deletePin, getPin, updatePinLocation, 
         getUserRequests, getFriendStatus, createFriendRequest, deleteFriendRequest, acceptFriendRequest,
         getUserFriends, getSearchUsers,
@@ -18,13 +18,17 @@ userRouter.post("/signup", signup);
 // Login a user
 userRouter.post("/login", login);
 
+// Check if username exists
 userRouter.get("/username_exists/:username", checkUsername);
 
 // Get user info
 userRouter.get("/:user_id/info", getUserInfo);
 
 // Update user info
-userRouter.put("/:user_id/update", upload.single('profile_pic'), updateUserInfo);
+userRouter.put("/:user_id/update", updateUserInfo);
+
+// Update user profile pic
+userRouter.put("/:user_id/update_profile_pic", upload.single('profile_pic'), updateUserPic);
 
 // Get all pins
 userRouter.get("/:user_id/pins", getUserPins);

@@ -164,6 +164,41 @@ export const updateUserInfo = async (req: Request, res: Response) => {
   try {
     const { user_id } = req.params;
     const { username, full_name, pass, birthday, phone_no } = req.body;
+
+    const user = await pool.query(
+      "UPDATE users.users SET username = $1, full_name = $2, birthday = $3, phone_no = $4 WHERE user_id = $5 RETURNING *", 
+      [username, full_name, birthday, phone_no, user_id]
+    );
+    if (user.rows.length === 0) {
+      return res.status(400).json({
+        message: "User does not exist",
+      });
+    }
+
+    if (pass != "") {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPass = await bcrypt.hash(pass, salt);
+      await pool.query(
+        "UPDATE users.users SET pass = $1 WHERE user_id = $2 RETURNING *", 
+        [pass, user_id]
+      );
+    }
+
+    return res.status(200).json({
+      message: "User info updated successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
+
+// UPDATE USER PROFILE PIC
+export const updateUserPic = async (req: Request, res: Response) => {
+  try {
+    const { user_id } = req.params;
     const profile_pic  = req.file?.buffer;
 
     let profile_pic_url = null;
@@ -184,12 +219,9 @@ export const updateUserInfo = async (req: Request, res: Response) => {
       await s3.send(command);
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPass = await bcrypt.hash(pass, salt);
-
     const user = await pool.query(
-      "UPDATE users.users SET username = $1, full_name = $2, pass= $3, birthday = $4, phone_no = $5, profile_pic = $6 WHERE user_id = $7 RETURNING *", 
-      [username, full_name, hashedPass, birthday, phone_no, profile_pic_url, user_id]
+      "UPDATE users.users SET profile_pic = $1 WHERE user_id = $2 RETURNING *", 
+      [profile_pic_url, user_id]
     );
 
     if (user.rows.length === 0) {
