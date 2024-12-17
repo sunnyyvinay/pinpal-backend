@@ -188,7 +188,7 @@ export const updateUserInfo = async (req: Request, res: Response) => {
     const hashedPass = await bcrypt.hash(pass, salt);
 
     const user = await pool.query(
-      "UPDATE users.users SET username = $1, full_name = $2, pass= $3, birthday = $4, phone_no = $5, profile_pic = $6 WHERE user_id = $8 RETURNING *", 
+      "UPDATE users.users SET username = $1, full_name = $2, pass= $3, birthday = $4, phone_no = $5, profile_pic = $6 WHERE user_id = $7 RETURNING *", 
       [username, full_name, hashedPass, birthday, phone_no, profile_pic_url, user_id]
     );
 
