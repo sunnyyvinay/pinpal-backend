@@ -249,12 +249,6 @@ export const getUserPins = async (req: Request, res: Response) => {
       "SELECT * FROM users.pins WHERE user_id = $1", 
       [user_id]
     );
-    if (pins.rows.length === 0) {
-      return res.status(400).json({
-        message: "User has no pins",
-        pins: [],
-      });
-    }
 
     return res.status(200).json({
       message: "User info retrieved successfully",
@@ -762,12 +756,6 @@ export const getPublicPins = async (req: Request, res: Response) => {
       [user_id]
     );
     
-    if (publicPins.rows.length === 0) {
-      return res.status(400).json({
-        message: "No public pins found",
-        pins: [],
-      });
-    }
     var selectedPublicPins = [];
     var randomIndexes: number[] = [];
     for (let i = 0; i < publicPins.rows.length; i++) { // randomly chooses 1/3 of the public pins
@@ -799,12 +787,6 @@ export const getTaggedPins = async (req: Request, res: Response) => {
       "SELECT * FROM users.pins WHERE $1 = ANY(user_tags)", 
       [user_id]
     );
-    if (pins.rows.length === 0) {
-      return res.status(400).json({
-        message: "User has no pins",
-        pins: [],
-      });
-    }
 
     return res.status(200).json({
       message: "User info retrieved successfully",
