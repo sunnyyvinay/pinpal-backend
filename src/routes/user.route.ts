@@ -1,6 +1,6 @@
 import multer from 'multer';
 import { Router } from "express";
-import { signup, login, checkUsername, getUserInfo, updateUserInfo, updateUserPic, getUserPins, 
+import { basicRoute, signup, login, checkUsername, getUserInfo, updateUserInfo, updateUserPic, getUserPins, 
         addPin, updatePin, deletePin, getPin, updatePinLocation, 
         getUserRequests, getFriendStatus, createFriendRequest, deleteFriendRequest, acceptFriendRequest,
         getUserFriends, getSearchUsers,
@@ -11,6 +11,9 @@ const userRouter = Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 upload.single('profile_pic');
+
+// Basic route
+userRouter.get("/", basicRoute);
 
 // Signup a new user
 userRouter.post("/signup", signup);

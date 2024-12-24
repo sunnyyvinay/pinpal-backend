@@ -18,6 +18,19 @@ const s3 = new S3Client({
   region: bucketRegion,
 });
 
+// BASIC ROUTE
+export const basicRoute = async (req: Request, res: Response) => {
+  try {
+    return res.status(200).json({
+      message: "Welcome to PinPal API",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
 
 // SIGNUP USER
 export const signup = async (req: Request, res: Response) => {
