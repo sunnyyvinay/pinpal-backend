@@ -1,7 +1,7 @@
 /*
 Transfer from local machine to EC2 instance: rsync -avz --exclude 'node_modules' --exclude '.git' --exclude '.env' \
 -e "ssh -i ~/.ssh/sunny-mbp.pem" \
-. ubuntu@ec2-54-215-204-243.us-west-1.compute.amazonaws.com:~/pinpal
+. ubuntu@ec2-13-52-211-219.us-west-1.compute.amazonaws.com:~/pinpal
 
 Apply changes on EC2 instance: 
     1. npm run build
@@ -25,6 +25,7 @@ app.use(morgan('dev'));
 
 // Basic route
 app.get('/', (req: Request, res: Response) => {
+    res.set('Content-Type', 'text/html; charset=utf-8');
     try {
         return res.status(200).json({
             message: "Welcome to PinPal API",

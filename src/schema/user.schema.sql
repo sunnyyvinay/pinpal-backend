@@ -34,6 +34,6 @@ CREATE TABLE IF NOT EXISTS users.friendships (
 
 CREATE TABLE IF NOT EXISTS users.pin_likes (
     user_id UUID REFERENCES users.users(user_id),
-    pin_id UUID REFERENCES users.pins(pin_id),
+    pin_id UUID REFERENCES users.pins(pin_id) ON DELETE CASCADE,
     PRIMARY KEY(user_id, pin_id)
 );
