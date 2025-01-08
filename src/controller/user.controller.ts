@@ -702,7 +702,7 @@ export const deleteFriendRequest = async (req: Request, res: Response) => {
 
     const deleteRequestQuery = `
         DELETE FROM users.friendships 
-        WHERE (source_id = $1 AND target_id = $2) OR (target_id = $2 AND source_id = $1) RETURNING *`;
+        WHERE (source_id = $1 AND target_id = $2) OR (target_id = $1 AND source_id = $2) RETURNING *`;
     await pool.query(deleteRequestQuery, [user_id, target_id]);
 
     return res.status(200).json({
