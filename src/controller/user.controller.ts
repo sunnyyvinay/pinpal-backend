@@ -279,17 +279,27 @@ export const getUserPins = async (req: Request, res: Response) => {
 export const addPin = async (req: Request, res: Response) => {
   try {
     const user_id  = req.params.user_id;
-    const latitude = req.headers['latitude'];
-    const longitude = req.headers['longitude'];
-    const title = req.headers['title'];
-    const caption = req.headers['caption'];
-    const location_tags = typeof req.headers['location_tags'] === 'string'
-    ? JSON.parse(req.headers['location_tags'])
-    : [];
-    const visibility = req.headers['visibility'];
-    const user_tags = typeof req.headers['user_tags'] === 'string'
-    ? JSON.parse(req.headers['user_tags'])
-    : [];
+    // const latitude = req.headers['latitude'];
+    // const longitude = req.headers['longitude'];
+    // const title = req.headers['title'];
+    // const caption = req.headers['caption'];
+    // const location_tags = typeof req.headers['location_tags'] === 'string'
+    // ? JSON.parse(req.headers['location_tags'])
+    // : [];
+    // const visibility = req.headers['visibility'];
+    // const user_tags = typeof req.headers['user_tags'] === 'string'
+    // ? JSON.parse(req.headers['user_tags'])
+    // : [];
+    // const photo = req.file?.buffer;
+    const latitude = req.body.latitude;
+    const longitude = req.body.longitude;
+    const title = req.body.title;
+    const caption = req.body.caption;
+    const location_tags = req.body.location_tags
+      ? JSON.parse(req.body.location_tags)
+      : [];
+    const visibility = req.body.visibility;
+    const user_tags = req.body.user_tags ? JSON.parse(req.body.user_tags) : [];
     const photo = req.file?.buffer;
 
     let photo_url = null;
@@ -403,11 +413,22 @@ export const deletePin = async (req: Request, res: Response) => {
 export const updatePin = async (req: Request, res: Response) => {
     try {
       const { user_id, pin_id } = req.params;
-      const title = req.headers['title'];
-      const caption = req.headers['caption'];
-      const location_tags = typeof req.headers['location_tags'] === 'string' ? JSON.parse(req.headers['location_tags']) : [];
-      const visibility = req.headers['visibility'];
-      const user_tags = typeof req.headers['user_tags'] === 'string' ? JSON.parse(req.headers['user_tags']) : [];
+      // const title = req.headers['title'];
+      // const caption = req.headers['caption'];
+      // const location_tags = typeof req.headers['location_tags'] === 'string' ? JSON.parse(req.headers['location_tags']) : [];
+      // const visibility = req.headers['visibility'];
+      // const user_tags = typeof req.headers['user_tags'] === 'string' ? JSON.parse(req.headers['user_tags']) : [];
+      // const photo = req.file?.buffer;
+
+      const latitude = req.body.latitude;
+      const longitude = req.body.longitude;
+      const title = req.body.title;
+      const caption = req.body.caption;
+      const location_tags = req.body.location_tags
+        ? JSON.parse(req.body.location_tags)
+        : [];
+      const visibility = req.body.visibility;
+      const user_tags = req.body.user_tags ? JSON.parse(req.body.user_tags) : [];
       const photo = req.file?.buffer;
   
       // check if pin doesn't exist

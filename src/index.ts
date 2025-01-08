@@ -25,7 +25,7 @@ app.use(morgan('dev'));
 
 // Basic route
 app.get('/', (req: Request, res: Response) => {
-    res.set('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
     try {
         return res.status(200).json({
             message: "Welcome to PinPal API",
