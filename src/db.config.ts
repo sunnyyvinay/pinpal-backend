@@ -2,12 +2,14 @@ import { Pool } from "pg";
 import chalk from "chalk";
 import fs from "fs";
 import path from "path";
+import dotenv from "dotenv";
+dotenv.config();
 
 export const pool = new Pool({
     user: "me",
     host: "localhost",
     database: "pinpal",
-    password: "password",
+    password: process.env.DB_PASS,
     port: 5432
 });
 
