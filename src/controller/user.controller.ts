@@ -259,7 +259,7 @@ export const getUserPins = async (req: Request, res: Response) => {
   try {
     const { user_id } = req.params;
     const pins = await pool.query(
-      "SELECT * FROM users.pins WHERE user_id = $1 ORDER BY created_at DESC", 
+      "SELECT * FROM users.pins WHERE user_id = $1 ORDER BY create_date DESC", 
       [user_id]
     );
 
@@ -820,7 +820,7 @@ export const getTaggedPins = async (req: Request, res: Response) => {
   try {
     const { user_id } = req.params;
     const pins = await pool.query(
-      "SELECT * FROM users.pins WHERE $1 = ANY(user_tags)", 
+      "SELECT * FROM users.pins WHERE $1 = ANY(user_tags) ORDER BY create_date DESC", 
       [user_id]
     );
 

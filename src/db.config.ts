@@ -9,7 +9,7 @@ export const pool = new Pool({
     user: "me",
     host: "localhost",
     database: "pinpal",
-    password: process.env.DB_PASS,
+    password: "password",
     port: 5432
 });
 
