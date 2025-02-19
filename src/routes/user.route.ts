@@ -5,7 +5,9 @@ import { basicRoute, signup, login, checkUsername, getUserInfo, updateUserInfo, 
         getUserRequests, getFriendStatus, createFriendRequest, deleteFriendRequest, acceptFriendRequest,
         getUserFriends, getSearchUsers,
         getPinLikes, addPinLike, removePinLike,
-        getPublicPins, getTaggedPins } from "../controller/user.controller";
+        getPublicPins, getTaggedPins,
+        getUserReccFriends, 
+        checkPhoneNo} from "../controller/user.controller";
 
 const userRouter = Router();
 const storage = multer.memoryStorage();
@@ -23,6 +25,9 @@ userRouter.post("/login", login);
 
 // Check if username exists
 userRouter.get("/username_exists/:username", checkUsername);
+
+// Check if phone number exists
+userRouter.get("/phone_no_exists/:phone_no", checkPhoneNo);
 
 // Get user info
 userRouter.get("/:user_id/info", getUserInfo);
@@ -86,5 +91,8 @@ userRouter.get("/:user_id/pins/public", getPublicPins);
 
 // Get tagged pins
 userRouter.get("/:user_id/pins/tagged", getTaggedPins);
+
+// Get recommended friends
+userRouter.get("/:user_id/friends/recommended", getUserReccFriends);
 
 export default userRouter;

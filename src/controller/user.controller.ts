@@ -138,6 +138,34 @@ export const checkUsername = async (req: Request, res: Response) => {
   }
 };
 
+// CHECK IF PHONE NO EXISTS
+export const checkPhoneNo = async (req: Request, res: Response) => {
+  try {
+    const { phone_no } = req.params;
+    const user = await pool.query(
+      "SELECT * FROM users.users WHERE phone_no = $1", 
+      [phone_no]
+    );
+    if (user.rows.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "User with this phone number already exists",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Phone number is available",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 // GET USER INFO
 export const getUserInfo = async (req: Request, res: Response) => {
   try {
@@ -827,6 +855,57 @@ export const getTaggedPins = async (req: Request, res: Response) => {
     return res.status(200).json({
       message: "User info retrieved successfully",
       pins: pins.rows,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
+
+export const getUserReccFriends = async (req: Request, res: Response) => {
+  try {
+    const { user_id } = req.params;
+    const reccFriends = await pool.query(`
+      WITH current_user_friends AS (
+        SELECT
+            CASE
+                WHEN source_id = $1 THEN target_id
+                WHEN target_id = $1 THEN source_id
+            END AS friend_id
+        FROM users.friendships
+        WHERE (source_id = $1 OR target_id = $1)
+          AND friend_status = 1
+      ),
+      mutual_friends AS (
+      SELECT 
+          CASE 
+              WHEN f.source_id = cf.friend_id THEN f.target_id
+              WHEN f.target_id = cf.friend_id THEN f.source_id
+          END AS potential_friend,
+          COUNT(*) AS mutual_count
+      FROM friendships f
+      JOIN current_user_friends cf 
+          ON (f.source_id = cf.friend_id OR f.target_id = cf.friend_id)
+      WHERE (f.source_id != $1 AND f.target_id != $1)
+        AND f.status = 1
+      GROUP BY potential_friend
+      )
+      SELECT 
+          potential_friend AS recommended_user_id,
+          mutual_count
+      FROM mutual_friends
+      WHERE potential_friend NOT IN (
+          SELECT friend_id FROM current_user_friends
+      )
+      ORDER BY mutual_count DESC
+      LIMIT 5;
+    `, [user_id]);
+
+    return res.status(200).json({
+      message: "Recommended friends retrieved successfully",
+      reccs: reccFriends.rows,
     });
   } catch (error) {
     console.log(error);
