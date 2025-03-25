@@ -10,7 +10,9 @@ export const pool = new Pool({
     host: "localhost",
     database: "pinpal",
     password: "password",
-    port: 5432
+    port: 6432,
+    max: 10,
+    idleTimeoutMillis: 30000
 });
 
 // Read the contents of the user.schema.sql file
