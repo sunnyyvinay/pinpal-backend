@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { pool } from "../db.config";
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import dotenv from "dotenv";
+import { sendVerificationCodeService, verifyCodeService } from "../services/twilio.service";
 const bcrypt = require("bcryptjs");
 
 dotenv.config();
@@ -109,6 +110,32 @@ export const login = async (req: Request, res: Response) => {
     });
   }
 };
+
+// SEND OTP VERIFICATION CODE
+export const sendVerification = async (req: Request, res: Response) => {
+  const { phoneNumber } = req.body;
+  try {
+    const response = await sendVerificationCodeService(phoneNumber);
+    res.status(200).json({ success: true, message: 'Verification code sent', data: response });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to send verification code', error });
+  }
+}
+
+// VERIFY OTP CODE
+export const verifyCode = async (req: Request, res: Response) => {
+  const { phoneNumber, code } = req.body;
+  try {
+    const response = await verifyCodeService(phoneNumber, code);
+    if (response.status === 'approved') {
+      res.status(200).json({ success: true, message: 'Phone number verified' });
+    } else {
+      res.status(400).json({ success: false, message: 'Invalid verification code' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to verify code', error });
+  }
+}
 
 // CHECK IF USERNAME EXISTS
 export const checkUsername = async (req: Request, res: Response) => {

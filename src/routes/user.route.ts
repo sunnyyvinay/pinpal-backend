@@ -7,7 +7,9 @@ import { basicRoute, signup, login, checkUsername, getUserInfo, updateUserInfo, 
         getPinLikes, addPinLike, removePinLike,
         getPublicPins, getTaggedPins,
         getUserReccFriends, 
-        checkPhoneNo} from "../controller/user.controller";
+        checkPhoneNo,
+        sendVerification,
+        verifyCode} from "../controller/user.controller";
 
 const userRouter = Router();
 const storage = multer.memoryStorage();
@@ -22,6 +24,12 @@ userRouter.post("/signup", signup);
 
 // Login a user
 userRouter.post("/login", login);
+
+// Send verification code
+userRouter.post('/send-verification', sendVerification);
+
+// Verify the code
+userRouter.post('/verify-code', verifyCode);
 
 // Check if username exists
 userRouter.get("/username_exists/:username", checkUsername);
