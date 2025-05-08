@@ -6,17 +6,18 @@ import { sendVerificationCodeService, verifyCodeService } from "../services/twil
 const bcrypt = require("bcryptjs");
 
 dotenv.config();
-const bucketName = process.env.AWS_BUCKET_NAME;
-const bucketRegion = process.env.AWS_BUCKET_REGION;
+const bucketName = process.env.AWS_BUCKET_NAME || 'pinpal-images';
+const bucketRegion = process.env.AWS_BUCKET_REGION || "us-west-1";
 const accessKey = process.env.AWS_ACCESS_KEY ?? "";
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY ?? "";
 
 const s3 = new S3Client({
-  credentials: {
-    accessKeyId: accessKey,
-    secretAccessKey: secretAccessKey,
-  },
   region: bucketRegion,
+  forcePathStyle: true,
+  // credentials: {
+  //   accessKeyId: accessKey,
+  //   secretAccessKey: secretAccessKey,
+  // },
 });
 
 // BASIC ROUTE
@@ -442,7 +443,7 @@ export const deletePin = async (req: Request, res: Response) => {
         });
       }
 
-      const photo_url = (pin.rows[0].photo).replace('https://pinpal-images.s3.us-east-2.amazonaws.com/', '');
+      const photo_url = (pin.rows[0].photo).replace(`https://${bucketName}.s3.${bucketRegion}.amazonaws.com/`, '');
       const command = new DeleteObjectCommand({
         Bucket: bucketName,
         Key: photo_url,
@@ -501,7 +502,7 @@ export const updatePin = async (req: Request, res: Response) => {
 
       const date = Date.now();
       if (photo) {
-        const old_photo_url = (pin.rows[0].photo).replace('https://pinpal-images.s3.us-east-2.amazonaws.com/', '');
+        const old_photo_url = (pin.rows[0].photo).replace(`https://${bucketName}.s3.${bucketRegion}.amazonaws.com/`, '');
         const command = new DeleteObjectCommand({
           Bucket: bucketName,
           Key: old_photo_url,
