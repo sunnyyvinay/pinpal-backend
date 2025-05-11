@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS users.users (
     pass TEXT NOT NULL,
     birthday DATE NOT NULL,
     profile_pic TEXT,
-    phone_no TEXT
+    phone_no TEXT,
+    device_token TEXT
 );
 
 CREATE TABLE IF NOT EXISTS users.pins (

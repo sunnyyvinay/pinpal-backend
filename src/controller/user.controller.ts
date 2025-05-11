@@ -3,6 +3,7 @@ import { pool } from "../db.config";
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import dotenv from "dotenv";
 import { sendVerificationCodeService, verifyCodeService } from "../services/twilio.service";
+import admin from 'firebase-admin';
 const bcrypt = require("bcryptjs");
 
 dotenv.config();
@@ -19,6 +20,13 @@ const s3 = new S3Client({
   //   secretAccessKey: secretAccessKey,
   // },
 });
+
+// Initialize Firebase Admin SDK if not already done
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(require('../../pinpal-32a9b-firebase-adminsdk-y30lp-392e185cfb.json')),
+  });
+}
 
 // BASIC ROUTE
 export const basicRoute = async (req: Request, res: Response) => {
@@ -712,12 +720,37 @@ export const getFriendStatus = async (req: Request, res: Response) => {
 // CREATE A FRIEND REQUEST
 export const createFriendRequest = async (req: Request, res: Response) => {
   try {
-    const { user_id, target_id}  = req.params;
+    const { user_id, target_id} = req.params;
 
     const newPinQuery = `
         INSERT INTO users.friendships (source_id, target_id, friend_status) 
         VALUES ($1, $2, $3) RETURNING *`;
     await pool.query(newPinQuery, [user_id, target_id, 0]);
+
+    const targetToken = await getDeviceToken(target_id);
+
+    const user = await pool.query(
+      "SELECT * FROM users.users WHERE user_id = $1", 
+      [user_id]
+    );
+    const senderUsername = user.rows[0].username;
+
+    // Send notification if token exists
+    if (targetToken) {
+      const message = {
+        token: targetToken,
+        notification: {
+          title: 'New Friend Request',
+          body: `${senderUsername} sent you a friend request!`,
+        },
+        data: {
+          type: 'FRIEND_REQUEST',
+          senderId: user_id,
+        },
+      };
+      
+      await admin.messaging().send(message);
+    }
 
     return res.status(200).json({
       message: "Friend request created successfully",
@@ -942,3 +975,45 @@ export const getUserReccFriends = async (req: Request, res: Response) => {
     });
   }
 }
+
+// In your user service on the backend
+export const getDeviceToken = async (userId: string) => {
+  try {
+    const result = await pool.query(
+      'SELECT device_token FROM users WHERE user_id = $1',
+      [userId]
+    );
+    
+    if (result.rows.length > 0) {
+      return result.rows[0].device_token;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting device token:', error);
+    return null;
+  }
+};
+
+// Add to your user controller
+export const saveDeviceToken = async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  const { token } = req.body;
+  
+  try {
+    await pool.query(
+      'UPDATE users SET device_token = $1 WHERE user_id = $2',
+      [token, userId]
+    );
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Device token updated successfully'
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update device token',
+      error: (error as Error).message
+    });
+  }
+};

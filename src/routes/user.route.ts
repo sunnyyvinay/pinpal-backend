@@ -9,7 +9,8 @@ import { basicRoute, signup, login, checkUsername, getUserInfo, updateUserInfo, 
         getUserReccFriends, 
         checkPhoneNo,
         sendVerification,
-        verifyCode} from "../controller/user.controller";
+        verifyCode,
+        saveDeviceToken} from "../controller/user.controller";
 
 const userRouter = Router();
 const storage = multer.memoryStorage();
@@ -102,5 +103,8 @@ userRouter.get("/:user_id/pins/tagged", getTaggedPins);
 
 // Get recommended friends
 userRouter.get("/:user_id/friends/recommended", getUserReccFriends);
+
+// Save device token
+userRouter.post("/user/:user_id/token", saveDeviceToken);
 
 export default userRouter;
