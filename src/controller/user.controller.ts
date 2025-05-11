@@ -734,14 +734,15 @@ export const createFriendRequest = async (req: Request, res: Response) => {
       [user_id]
     );
     const senderUsername = user.rows[0].username;
+    const senderFullname = user.rows[0].full_name;
 
     // Send notification if token exists
     if (targetToken) {
       const message = {
         token: targetToken,
         notification: {
-          title: 'New Friend Request',
-          body: `${senderUsername} sent you a friend request!`,
+          title: 'PinPal',
+          body: `${senderFullname} (${senderUsername}) sent you a friend request!`,
         },
         data: {
           type: 'FRIEND_REQUEST',
