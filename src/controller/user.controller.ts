@@ -15,10 +15,10 @@ const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY ?? "";
 const s3 = new S3Client({
   region: bucketRegion,
   forcePathStyle: true,
-  // credentials: {
-  //   accessKeyId: accessKey,
-  //   secretAccessKey: secretAccessKey,
-  // },
+  credentials: {
+    accessKeyId: accessKey,
+    secretAccessKey: secretAccessKey,
+  },
 });
 
 // Initialize Firebase Admin SDK if not already done
@@ -980,7 +980,7 @@ export const getUserReccFriends = async (req: Request, res: Response) => {
 export const getDeviceToken = async (userId: string) => {
   try {
     const result = await pool.query(
-      'SELECT device_token FROM users WHERE user_id = $1',
+      'SELECT device_token FROM users.users WHERE user_id = $1',
       [userId]
     );
     
@@ -1001,7 +1001,7 @@ export const saveDeviceToken = async (req: Request, res: Response) => {
   
   try {
     await pool.query(
-      'UPDATE users SET device_token = $1 WHERE user_id = $2',
+      'UPDATE users.users SET device_token = $1 WHERE user_id = $2',
       [token, userId]
     );
     
@@ -1010,10 +1010,10 @@ export const saveDeviceToken = async (req: Request, res: Response) => {
       message: 'Device token updated successfully'
     });
   } catch (error) {
+    console.error('Error updating device token:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to update device token',
-      error: (error as Error).message
+      message: 'Failed to update device token'
     });
   }
 };
