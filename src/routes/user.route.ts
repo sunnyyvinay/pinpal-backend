@@ -105,6 +105,6 @@ userRouter.get("/:user_id/pins/tagged", getTaggedPins);
 userRouter.get("/:user_id/friends/recommended", getUserReccFriends);
 
 // Save device token
-userRouter.post("/user/:user_id/token", saveDeviceToken);
+userRouter.post("/:user_id/token", saveDeviceToken);
 
 export default userRouter;

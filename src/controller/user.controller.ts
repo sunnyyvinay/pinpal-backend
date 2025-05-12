@@ -15,10 +15,10 @@ const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY ?? "";
 const s3 = new S3Client({
   region: bucketRegion,
   forcePathStyle: true,
-  credentials: {
-    accessKeyId: accessKey,
-    secretAccessKey: secretAccessKey,
-  },
+  // credentials: {
+  //   accessKeyId: accessKey,
+  //   secretAccessKey: secretAccessKey,
+  // },
 });
 
 // Initialize Firebase Admin SDK if not already done
@@ -343,18 +343,6 @@ export const getUserPins = async (req: Request, res: Response) => {
 export const addPin = async (req: Request, res: Response) => {
   try {
     const user_id  = req.params.user_id;
-    // const latitude = req.headers['latitude'];
-    // const longitude = req.headers['longitude'];
-    // const title = req.headers['title'];
-    // const caption = req.headers['caption'];
-    // const location_tags = typeof req.headers['location_tags'] === 'string'
-    // ? JSON.parse(req.headers['location_tags'])
-    // : [];
-    // const visibility = req.headers['visibility'];
-    // const user_tags = typeof req.headers['user_tags'] === 'string'
-    // ? JSON.parse(req.headers['user_tags'])
-    // : [];
-    // const photo = req.file?.buffer;
     const latitude = req.body.latitude;
     const longitude = req.body.longitude;
     const title = req.body.title;
@@ -479,13 +467,6 @@ export const deletePin = async (req: Request, res: Response) => {
 export const updatePin = async (req: Request, res: Response) => {
     try {
       const { user_id, pin_id } = req.params;
-      // const title = req.headers['title'];
-      // const caption = req.headers['caption'];
-      // const location_tags = typeof req.headers['location_tags'] === 'string' ? JSON.parse(req.headers['location_tags']) : [];
-      // const visibility = req.headers['visibility'];
-      // const user_tags = typeof req.headers['user_tags'] === 'string' ? JSON.parse(req.headers['user_tags']) : [];
-      // const photo = req.file?.buffer;
-
       const latitude = req.body.latitude;
       const longitude = req.body.longitude;
       const title = req.body.title;
@@ -997,15 +978,14 @@ export const getDeviceToken = async (userId: string) => {
 
 // Add to your user controller
 export const saveDeviceToken = async (req: Request, res: Response) => {
-  const { userId } = req.params;
+  const { user_id } = req.params;
   const { token } = req.body;
   
   try {
-    await pool.query(
-      'UPDATE users.users SET device_token = $1 WHERE user_id = $2',
-      [token, userId]
+    const result = await pool.query(
+      'UPDATE users.users SET device_token = $1 WHERE user_id = $2 RETURNING *',
+      [token, user_id]
     );
-    
     return res.status(200).json({
       success: true,
       message: 'Device token updated successfully'

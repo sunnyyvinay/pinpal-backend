@@ -5,7 +5,8 @@ Transfer from local machine to EC2 instance: rsync -avz --exclude 'node_modules'
 
 Apply changes on EC2 instance: 
     1. npm run build
-    2. sudo systemctl restart pinpal.service
+    2. pm2 restart pinpal-api
+    3. sudo systemctl restart pinpal.service
 */
 
 import express, { Request, Response } from 'express';

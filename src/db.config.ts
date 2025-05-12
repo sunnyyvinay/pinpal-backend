@@ -10,7 +10,7 @@ export const pool = new Pool({
     host: "localhost",
     database: "pinpal",
     password: "password",
-    port: 5432, // 5432 (development) or 6432 (production)
+    port: 6432, // 5432 (development) or 6432 (production)
     max: 10,
     idleTimeoutMillis: 30000
 });
