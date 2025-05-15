@@ -15,10 +15,10 @@ const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY ?? "";
 const s3 = new S3Client({
   region: bucketRegion,
   forcePathStyle: true,
-  // credentials: {
-  //   accessKeyId: accessKey,
-  //   secretAccessKey: secretAccessKey,
-  // },
+  credentials: {
+    accessKeyId: accessKey,
+    secretAccessKey: secretAccessKey,
+  },
 });
 
 // Initialize Firebase Admin SDK if not already done
@@ -845,6 +845,53 @@ export const removePinLike = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "Pin like removed successfully"
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
+
+// GET FRIEND PINS
+export const getFriendPins = async (req: Request, res: Response) => {
+  try {
+    const { user_id } = req.params;
+
+    const friendData = await pool.query(
+      "SELECT * FROM users.friendships WHERE friend_status = 1 AND (target_id = $1 OR source_id = $1)", 
+      [user_id]
+    );
+    const friends = friendData.rows;
+    var friendPins = [];
+    for (let i = 0; i < friends.length; i++) {
+      var friend_info; var friend_pins;
+      if (friends[i].source_id != user_id) {
+        friend_pins = await pool.query("SELECT * FROM users.pins WHERE user_id = $1", [friends[i].source_id]);
+        friend_info = await pool.query("SELECT * FROM users.users WHERE user_id = $1", [friends[i].source_id]);  
+      } else {
+        friend_pins = await pool.query("SELECT * FROM users.pins WHERE user_id = $1", [friends[i].target_id]);
+        friend_info = await pool.query("SELECT * FROM users.users WHERE user_id = $1", [friends[i].target_id]);  
+      }
+      for (let j = 0; j < friend_pins.rows.length; j++) {
+        const friend = {
+          user_id: friend_info.rows[0].user_id,
+          username: friend_info.rows[0].username,
+          full_name: friend_info.rows[0].full_name,
+          pass: friend_info.rows[0].pass,
+          birthday: friend_info.rows[0].birthday,
+          phone_no: friend_info.rows[0].phone_no,
+          profile_pic: friend_info.rows[0].profile_pic
+        }
+        const pin = {user: friend, pin: friend_pins.rows[j]};
+        friendPins.push(pin);
+      }
+    }
+
+    return res.status(200).json({
+      message: "Friend pins retrieved successfully",
+      pins: friendPins,
     });
   } catch (error) {
     console.log(error);

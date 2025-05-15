@@ -3,13 +3,10 @@ import { Router } from "express";
 import { basicRoute, signup, login, checkUsername, getUserInfo, updateUserInfo, updateUserPic, getUserPins, 
         addPin, updatePin, deletePin, getPin, updatePinLocation, 
         getUserRequests, getFriendStatus, createFriendRequest, deleteFriendRequest, acceptFriendRequest,
-        getUserFriends, getSearchUsers,
+        getUserFriends, getSearchUsers, getUserReccFriends, 
         getPinLikes, addPinLike, removePinLike,
-        getPublicPins, getTaggedPins,
-        getUserReccFriends, 
-        checkPhoneNo,
-        sendVerification,
-        verifyCode,
+        getFriendPins, getPublicPins, getTaggedPins,
+        checkPhoneNo, sendVerification, verifyCode,
         saveDeviceToken} from "../controller/user.controller";
 
 const userRouter = Router();
@@ -56,6 +53,9 @@ userRouter.post("/:user_id/pin/add", upload.single('photo'), addPin);
 // Get a pin
 userRouter.get("/:user_id/pin/:pin_id/info", getPin);
 
+// Get a pin by pin_id
+userRouter.get("/pin/:pin_id", getPin);
+
 // Update pin info
 userRouter.put("/:user_id/pin/:pin_id/update", upload.single('photo'), updatePin);
 
@@ -94,6 +94,9 @@ userRouter.post("/:pin_id/user/:user_id/like", addPinLike);
 
 // Remove pin like
 userRouter.delete("/:pin_id/user/:user_id/unlike", removePinLike);
+
+// Get friend pins
+userRouter.get("/:user_id/pins/friends", getFriendPins);
 
 // Get public pins
 userRouter.get("/:user_id/pins/public", getPublicPins);
