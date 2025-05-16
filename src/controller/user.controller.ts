@@ -15,7 +15,7 @@ const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY ?? "";
 const s3 = new S3Client({
   region: bucketRegion,
   forcePathStyle: true,
-  credentials: {
+  credentials: { // comment out for production
     accessKeyId: accessKey,
     secretAccessKey: secretAccessKey,
   },
@@ -218,15 +218,7 @@ export const getUserInfo = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "User info retrieved successfully",
-      user: {
-        user_id: user.rows[0].user_id,
-        username: user.rows[0].username,
-        full_name: user.rows[0].full_name,
-        pass: user.rows[0].pass,
-        birthday: user.rows[0].birthday,
-        phone_no: user.rows[0].phone_no,
-        profile_pic: user.rows[0].profile_pic
-      },
+      user: user.rows[0],
     });
   } catch (error) {
     console.log(error);
@@ -347,9 +339,7 @@ export const addPin = async (req: Request, res: Response) => {
     const longitude = req.body.longitude;
     const title = req.body.title;
     const caption = req.body.caption;
-    const location_tags = req.body.location_tags
-      ? JSON.parse(req.body.location_tags)
-      : [];
+    const location_tags = req.body.location_tags ? JSON.parse(req.body.location_tags) : [];
     const visibility = req.body.visibility;
     const user_tags = req.body.user_tags ? JSON.parse(req.body.user_tags) : [];
     const photo = req.file?.buffer;
@@ -400,20 +390,7 @@ export const getPin = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "User info retrieved successfully",
-      pin: {
-        pin_id: pin.rows[0].pin_id,
-        user_id: pin.rows[0].user_id,
-        latitude: pin.rows[0].latitude,
-        longitude: pin.rows[0].longitude,
-        title: pin.rows[0].title,
-        caption: pin.rows[0].caption,
-        create_date: pin.rows[0].create_date,
-        edit_date: pin.rows[0].edit_date,
-        photo: pin.rows[0].photo,
-        location_tags: pin.rows[0].location_tags,
-        visibility: pin.rows[0].visibility,
-        user_tags: pin.rows[0].user_tags
-      },
+      pin: pin.rows[0],
     });
   } catch (error) {
     console.log(error);
@@ -471,9 +448,7 @@ export const updatePin = async (req: Request, res: Response) => {
       const longitude = req.body.longitude;
       const title = req.body.title;
       const caption = req.body.caption;
-      const location_tags = req.body.location_tags
-        ? JSON.parse(req.body.location_tags)
-        : [];
+      const location_tags = req.body.location_tags ? JSON.parse(req.body.location_tags) : [];
       const visibility = req.body.visibility;
       const user_tags = req.body.user_tags ? JSON.parse(req.body.user_tags) : [];
       const photo = req.file?.buffer;
@@ -517,8 +492,6 @@ export const updatePin = async (req: Request, res: Response) => {
           WHERE user_id = $6 AND pin_id = $7 RETURNING *`;
         await pool.query(updatePinQuery, [title, caption, location_tags, visibility, user_tags, user_id, pin_id]);
       }
-  
-      
   
       return res.status(200).json({
         message: "Pin updated successfully",
@@ -875,16 +848,7 @@ export const getFriendPins = async (req: Request, res: Response) => {
         friend_info = await pool.query("SELECT * FROM users.users WHERE user_id = $1", [friends[i].target_id]);  
       }
       for (let j = 0; j < friend_pins.rows.length; j++) {
-        const friend = {
-          user_id: friend_info.rows[0].user_id,
-          username: friend_info.rows[0].username,
-          full_name: friend_info.rows[0].full_name,
-          pass: friend_info.rows[0].pass,
-          birthday: friend_info.rows[0].birthday,
-          phone_no: friend_info.rows[0].phone_no,
-          profile_pic: friend_info.rows[0].profile_pic
-        }
-        const pin = {user: friend, pin: friend_pins.rows[j]};
+        const pin = {user: friend_info.rows[0], pin: friend_pins.rows[j]};
         friendPins.push(pin);
       }
     }
@@ -922,7 +886,7 @@ export const getPublicPins = async (req: Request, res: Response) => {
         "SELECT * FROM users.users WHERE user_id = $1",
         [publicPins.rows[i].user_id]
       );
-      selectedPublicPins.push({ user : user.rows[0],pin: publicPins.rows[i]});
+      selectedPublicPins.push({ user : user.rows[0], pin: publicPins.rows[i] });
     }
     
     return res.status(200).json({
@@ -1009,7 +973,6 @@ export const getUserReccFriends = async (req: Request, res: Response) => {
   }
 }
 
-// In your user service on the backend
 export const getDeviceToken = async (userId: string) => {
   try {
     const result = await pool.query(
@@ -1027,7 +990,6 @@ export const getDeviceToken = async (userId: string) => {
   }
 };
 
-// Add to your user controller
 export const saveDeviceToken = async (req: Request, res: Response) => {
   const { user_id } = req.params;
   const { token } = req.body;
