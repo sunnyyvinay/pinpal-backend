@@ -772,7 +772,7 @@ export const acceptFriendRequest = async (req: Request, res: Response) => {
         },
         data: {
           type: 'FRIEND_REQUEST_ACCEPTED',
-          senderId: user_id,
+          targetId: target_id,
         },
       };
       
@@ -866,7 +866,7 @@ export const addPinLike = async (req: Request, res: Response) => {
         },
         data: {
           type: 'PIN_LIKE',
-          senderId: user_id,
+          userId: pin_user_id,
           pinId: pin_id,
         },
       };
