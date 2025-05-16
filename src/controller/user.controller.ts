@@ -906,7 +906,7 @@ export const getPublicPins = async (req: Request, res: Response) => {
   try {
     const { user_id } = req.params;
     const publicPins = await pool.query(
-      "SELECT * FROM users.pins WHERE visibility = 2 AND user_id <> $1 AND user_id NOT IN (SELECT target_id FROM users.friendships WHERE source_id = $1) AND user_id NOT IN (SELECT source_id FROM users.friendships WHERE target_id = $1)", 
+      "SELECT * FROM users.pins WHERE visibility = 2 AND user_id <> $1 AND user_id NOT IN (SELECT target_id FROM users.friendships WHERE source_id = $1 AND friend_status = 1) AND user_id NOT IN (SELECT source_id FROM users.friendships WHERE target_id = $1 AND friend_status = 1)", 
       [user_id]
     );
     
@@ -918,7 +918,11 @@ export const getPublicPins = async (req: Request, res: Response) => {
       //   randomIndexes.push(randomPinIndex);
       //   selectedPublicPins.push(publicPins.rows[randomPinIndex]);
       // }
-      selectedPublicPins.push(publicPins.rows[i]);
+      const user = await pool.query(
+        "SELECT * FROM users.users WHERE user_id = $1",
+        [publicPins.rows[i].user_id]
+      );
+      selectedPublicPins.push({ user : user.rows[0],pin: publicPins.rows[i]});
     }
     
     return res.status(200).json({
