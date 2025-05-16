@@ -359,8 +359,35 @@ export const addPin = async (req: Request, res: Response) => {
 
     const newPinQuery = `
         INSERT INTO users.pins (user_id, latitude, longitude, title, caption, photo, location_tags, visibility, user_tags) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`;
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING pin_id`;
     await pool.query(newPinQuery, [user_id, latitude, longitude, title, caption, photo_url, location_tags, visibility, user_tags]);
+
+    if (user_tags.length > 0) {
+      const user = await pool.query(
+        "SELECT * FROM users.users WHERE user_id = $1", 
+        [user_id]
+      );
+      const senderUsername = user.rows[0].username;
+      const senderFullname = user.rows[0].full_name;
+      for (let i = 0; i < user_tags.length; i++) {
+        const targetToken = await getDeviceToken(user_tags[i]);
+        if (targetToken) {
+          const message = {
+            token: targetToken,
+            notification: {
+              title: 'PinPal',
+              body: `${senderFullname} (${senderUsername}) tagged you in a pin!`,
+            },
+            data: {
+              type: 'PIN_TAG',
+              senderId: user_id,
+              pinId: newPinQuery,
+            },
+          };
+          await admin.messaging().send(message);
+        }
+      }
+    }
 
     return res.status(200).json({
       message: "Pin created successfully",
@@ -690,7 +717,6 @@ export const createFriendRequest = async (req: Request, res: Response) => {
     const senderUsername = user.rows[0].username;
     const senderFullname = user.rows[0].full_name;
 
-    // Send notification if token exists
     if (targetToken) {
       const message = {
         token: targetToken,
@@ -729,6 +755,30 @@ export const acceptFriendRequest = async (req: Request, res: Response) => {
           WHERE source_id = $1 AND target_id = $2 RETURNING *`;
     await pool.query(updatePinQuery, [user_id, target_id]);
 
+    const targetToken = await getDeviceToken(user_id);
+    const user = await pool.query(
+      "SELECT * FROM users.users WHERE user_id = $1", 
+      [target_id]
+    );
+    const targetUsername = user.rows[0].username;
+    const targetFullname = user.rows[0].full_name;
+    
+    if (targetToken) {
+      const message = {
+        token: targetToken,
+        notification: {
+          title: 'PinPal',
+          body: `${targetFullname} (${targetUsername}) accepted your friend request!`,
+        },
+        data: {
+          type: 'FRIEND_REQUEST_ACCEPTED',
+          senderId: user_id,
+        },
+      };
+      
+      await admin.messaging().send(message);
+    } 
+      
     return res.status(200).json({
       message: "Friend request updated successfully",
     });
@@ -790,10 +840,39 @@ export const addPinLike = async (req: Request, res: Response) => {
   try {
     const { user_id, pin_id } = req.params;
 
-    const likes = await pool.query(
+    await pool.query(
       "INSERT INTO users.pin_likes (user_id, pin_id) VALUES ($1, $2) RETURNING *", 
       [user_id, pin_id]
     );
+    const user = await pool.query(
+      "SELECT * FROM users.users WHERE user_id = $1",
+      [user_id]
+    );
+    const pin = await pool.query(
+      "SELECT * FROM users.pins WHERE pin_id = $1",
+      [pin_id]
+    );
+    const pin_user_id = pin.rows[0].user_id;
+    const pin_user_token = await getDeviceToken(pin_user_id);
+
+    const senderUsername = user.rows[0].username;
+    const senderFullname = user.rows[0].full_name;
+    if (pin_user_token) {
+      const message = {
+        token: pin_user_token,
+        notification: {
+          title: 'PinPal',
+          body: `${senderFullname} (${senderUsername}) liked your pin!`,
+        },
+        data: {
+          type: 'PIN_LIKE',
+          senderId: user_id,
+          pinId: pin_id,
+        },
+      };
+      
+      await admin.messaging().send(message);
+    }
 
     return res.status(200).json({
       message: "Pin like added successfully"
