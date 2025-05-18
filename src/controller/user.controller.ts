@@ -15,10 +15,10 @@ const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY ?? "";
 const s3 = new S3Client({
   region: bucketRegion,
   forcePathStyle: true,
-  credentials: { // comment out for production
-    accessKeyId: accessKey,
-    secretAccessKey: secretAccessKey,
-  },
+  // credentials: { // comment out for production
+  //   accessKeyId: accessKey,
+  //   secretAccessKey: secretAccessKey,
+  // },
 });
 
 // Initialize Firebase Admin SDK if not already done
@@ -360,7 +360,7 @@ export const addPin = async (req: Request, res: Response) => {
     const newPinQuery = `
         INSERT INTO users.pins (user_id, latitude, longitude, title, caption, photo, location_tags, visibility, user_tags) 
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING pin_id`;
-    await pool.query(newPinQuery, [user_id, latitude, longitude, title, caption, photo_url, location_tags, visibility, user_tags]);
+    const tagged_pin_id = await pool.query(newPinQuery, [user_id, latitude, longitude, title, caption, photo_url, location_tags, visibility, user_tags]);
 
     if (user_tags.length > 0) {
       const user = await pool.query(
@@ -381,7 +381,7 @@ export const addPin = async (req: Request, res: Response) => {
             data: {
               type: 'PIN_TAG',
               senderId: user_id,
-              pinId: newPinQuery,
+              pinId: tagged_pin_id.rows[0].pin_id,
             },
           };
           await admin.messaging().send(message);
